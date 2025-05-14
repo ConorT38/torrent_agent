@@ -23,7 +23,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'torrent_agent=torrent_manager_agent:main',  # Corrected module name
+            'torrent_agent=torrent_agent.torrent_agent:main',  # Corrected module name
         ],
     },
 )
