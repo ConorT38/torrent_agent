@@ -39,15 +39,21 @@ NON_BROWSER_FRIENDLY_FILETYPES = [".avi",".mov", ".mkv"]
 def main():
     db_connection = DB()
     for file_path in glob.glob("/mnt/ext1/torrents/**/*.*", recursive=True):
+        # Skip directories
+        if not os.path.isfile(file_path):
+            logger.debug(f"Skipping directory: {file_path}")
+            continue
+
         file_name = Path(file_path).stem
         logger.info("Processing file: " + file_name)
 
-        # Skip files that are still downloading
-        if not IsFileFullyDownloaded(file_path):
-            logger.info(f"File '{file_name}' is still downloading. Skipping.")
-            continue
-
         if not IsFileInDatabase(file_name, db_connection):
+
+            # Skip files that are still downloading
+            if not IsFileFullyDownloaded(file_path):
+                logger.info(f"File '{file_name}' is still downloading. Skipping.")
+                continue
+
             extension = "."+file_path.split(".")[-1].lower()
 
             if extension in NON_BROWSER_FRIENDLY_FILETYPES:
