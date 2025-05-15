@@ -42,6 +42,11 @@ def main():
         file_name = Path(file_path).stem
         logger.info("Processing file: " + file_name)
 
+        # Skip files that are still downloading
+        if not IsFileFullyDownloaded(file_path):
+            logger.info(f"File '{file_name}' is still downloading. Skipping.")
+            continue
+
         if not IsFileInDatabase(file_name, db_connection):
             extension = "."+file_path.split(".")[-1].lower()
 
@@ -52,6 +57,19 @@ def main():
             InsertFileMetadata(file_name, clean_file_name, db_connection)
         else:
             logger.info("File is already processed and stored")
+
+def IsFileFullyDownloaded(file_path, check_interval=5):
+    """
+    Checks if a file is fully downloaded by verifying that its size remains constant over a short period.
+    """
+    try:
+        initial_size = os.path.getsize(file_path)
+        time.sleep(check_interval)
+        final_size = os.path.getsize(file_path)
+        return initial_size == final_size
+    except FileNotFoundError:
+        logger.warning(f"File '{file_path}' not found during download check.")
+        return False
 
 def ScrubFileName(filePath):
     """
