@@ -13,8 +13,8 @@ log = logger.get_logger()
 metric_emitter = MetricEmitter()
 connection = DatabaseConnector()
 
-def process_video(file_name, file_path):
-    if not is_file_in_database(file_name, connection):
+async def process_video(file_name, file_path):
+    if not is_file_in_database(file_name):
 
             # Skip files that are still downloading
             if not is_file_fully_downloaded(file_path):
@@ -27,18 +27,21 @@ def process_video(file_name, file_path):
                 file_path = convert_to_browser_friendly_file_type(file_path, extension)
 
             clean_file_name = scrub_file_name(file_path)
-            insert_file_metadata(file_name, clean_file_name, connection)
+            insert_file_metadata(file_name, clean_file_name)
     else:
         log.info("File is already processed and stored")
 
-def insert_file_metadata(filename, file_uuid, connection):
-    log.info("Inserting "+filename+" into the database.")
+async def insert_file_metadata(filename, file_uuid):
+    log.info("Inserting " + filename + " into the database.")
     entertainment_type = file_uuid.split("/")[3]  # Extract the entertainment type from the path
     try:
-        connection.insert("INSERT INTO videos (filename, cdn_path, title, uploaded, entertainment_type) VALUES (\""+file_uuid+"\",\""+file_uuid.replace("/media","")+"\",\""+filename+"\", NOW(), \""+entertainment_type+"\")")
+        await connection.insert(
+            "INSERT INTO videos (filename, cdn_path, title, uploaded, entertainment_type) VALUES (%s, %s, %s, NOW(), %s)",
+            (file_uuid, file_uuid.replace("/media", ""), filename, entertainment_type)
+        )
         metric_emitter.db_inserts.inc()
     except Exception as e:
-        log.error(f'Failed to insert to db, failed with error {e}')
+        log.error(f"Failed to insert to db, failed with error {e}")
         metric_emitter.db_connection_failures.inc()
         raise e
     

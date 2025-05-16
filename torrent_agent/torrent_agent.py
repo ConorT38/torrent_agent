@@ -1,7 +1,7 @@
+import asyncio
 import glob
 import os
 from pathlib import Path
-import time
 
 from torrent_agent.common import logger
 from torrent_agent.common.constants import BROWSER_FRIENDLY_VIDEO_FILETYPES, IMAGE_FILETYPES, NON_BROWSER_FRIENDLY_VIDEO_FILETYPES
@@ -12,7 +12,7 @@ from torrent_agent.video.video_processor import process_video
 metric_emitter = MetricEmitter()
 log = logger.get_logger()
 
-def main():
+async def main():
     for file_path in glob.glob("/mnt/ext1/**/*.*", recursive=True):
         # Skip directories
         if not os.path.isfile(file_path):
@@ -24,23 +24,27 @@ def main():
 
         extension = "." + file_path.split(".")[-1].lower()
         if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES or extension in BROWSER_FRIENDLY_VIDEO_FILETYPES:
-            process_video(file_name, file_path)
+            await process_video(file_name, file_path)
         elif extension in IMAGE_FILETYPES:
-            process_image(file_name, file_path)
+           await process_image(file_name, file_path)
         else:
             log.info(f"File '{file_name}' is not a supported format. Skipping.")
             continue
         
 if __name__ == "__main__":
     log.info("Starting home media torrent util agent...")
-    while True:
-        with metric_emitter.agent_runs_cycles_duration.time():
-            try:
-                main()
-                log.info("Completed processing.")
-                metric_emitter.agent_runs_cycles.inc()
-            except Exception as e:
-                log.error(f"An error occurred: {e}")
-                metric_emitter.agent_runs_cycles_failed.inc()
-            time.sleep(10)
+
+    async def run_agent():
+        while True:
+            with metric_emitter.agent_runs_cycles_duration.time():
+                try:
+                    await main()
+                    log.info("Completed processing.")
+                    metric_emitter.agent_runs_cycles.inc()
+                except Exception as e:
+                    log.error(f"An error occurred: {e}")
+                    metric_emitter.agent_runs_cycles_failed.inc()
+                await asyncio.sleep(10)
+
+    asyncio.run(run_agent())
 
