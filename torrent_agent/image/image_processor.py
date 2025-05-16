@@ -20,10 +20,10 @@ def process_image(file_name, file_path):
     else:
         log.info("File is already processed and stored: " + file_name)
 
-def insert_file_metadata(filename, file_uuid, connection):
+def insert_file_metadata(filename, connection):
     log.info("Inserting "+filename+" into the database.")
     try:
-        connection.insert("INSERT INTO images (filename, cdn_path, uploaded) VALUES (\""+file_uuid+"\",\""+file_uuid.replace("/mnt/ext1","")+"\", NOW())")
+        connection.insert("INSERT INTO images (filename, cdn_path, uploaded) VALUES (\""+filename+"\",\""+filename.replace("/mnt/ext1","")+"\", NOW())")
         metric_emitter.db_inserts.inc()
     except Exception as e:
         log.error(f'Failed to insert to db, failed with error {e}')
