@@ -10,7 +10,7 @@ metric_emitter = MetricEmitter()
 connection = DatabaseConnector()
 
 async def process_image(file_name, file_path):
-    if not await asyncio.to_thread(is_file_in_database, file_name):
+    if not await is_file_in_database(file_name):
         extension = "." + file_path.split(".")[-1].lower()
 
         if extension in IMAGE_FILETYPES:

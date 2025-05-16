@@ -14,7 +14,7 @@ metric_emitter = MetricEmitter()
 connection = DatabaseConnector()
 
 async def process_video(file_name, file_path):
-    if not is_file_in_database(file_name):
+    if not await is_file_in_database(file_name):
 
             # Skip files that are still downloading
             if not is_file_fully_downloaded(file_path):

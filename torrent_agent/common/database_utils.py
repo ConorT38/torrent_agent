@@ -6,10 +6,10 @@ log = logger.get_logger()
 connection = DatabaseConnector()
 metric_emitter = MetricEmitter()
 
-def is_file_in_database(file, table="videos"):
+async def is_file_in_database(file, table="videos"):
     log.debug("Checking if "+file+" exists in the database.")
     try:
-        result = connection.query("SELECT * FROM "+table+" WHERE title = \""+file+"\" OR filename = \""+file+"\"")
+        result = await connection.query("SELECT * FROM "+table+" WHERE title = \""+file+"\" OR filename = \""+file+"\"")
     except Exception as e:
         log.error(f'Failed to select from db, failed with error {e}')
         metric_emitter.db_connection_failures.inc()
