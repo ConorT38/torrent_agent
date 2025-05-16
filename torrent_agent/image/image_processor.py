@@ -3,14 +3,13 @@ from torrent_agent.common.database_utils import is_file_in_database
 from torrent_agent.common.metrics import MetricEmitter
 from torrent_agent.database.database_connector import DatabaseConnector
 from torrent_agent.common.constants import IMAGE_FILETYPES
-import asyncio
 
 log = logger.get_logger()
 metric_emitter = MetricEmitter()
 connection = DatabaseConnector()
 
 async def process_image(file_name, file_path):
-    if not await is_file_in_database(file_name):
+    if not await is_file_in_database(file_name, 'images'):
         extension = "." + file_path.split(".")[-1].lower()
 
         if extension in IMAGE_FILETYPES:
