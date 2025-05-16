@@ -8,11 +8,13 @@ import mysql.connector
 from pathlib import Path
 from prometheus_client import start_http_server, Counter, Gauge, Histogram
 import time
+from logging.handlers import RotatingFileHandler
 
 logger = logging.getLogger('home-media-torrent-util')
 formatter = logging.Formatter('[%(asctime)s][%(levelname)s] -- %(message)s')
 
-fh = logging.FileHandler('/var/log/home-media-torrent-util/info.log')
+# Rotating file handler (5MB max size, keep 3 backups)
+fh = RotatingFileHandler('/var/log/home-media-torrent-util/info.log', maxBytes=5 * 1024 * 1024, backupCount=3)
 fh.setLevel(logging.DEBUG)
 fh.setFormatter(formatter)
 
@@ -38,7 +40,7 @@ NON_BROWSER_FRIENDLY_FILETYPES = [".avi",".mov", ".mkv"]
 
 def main():
     db_connection = DB()
-    for file_path in glob.glob("/mnt/ext1/torrents/**/*.*", recursive=True):
+    for file_path in glob.glob("/mnt/ext1/**/*.*", recursive=True):
         # Skip directories
         if not os.path.isfile(file_path):
             logger.debug(f"Skipping directory: {file_path}")
@@ -65,6 +67,10 @@ def main():
             logger.info("File is already processed and stored")
 
 def IsFileFullyDownloaded(file_path, check_interval=5):
+    if file_path.endswith(".part"):
+        logger.info(f"File '{file_path}' is a partial download (.part). Skipping.")
+        return False
+    
     """
     Checks if a file is fully downloaded by verifying that its size remains constant over a short period.
     """
@@ -116,8 +122,9 @@ def IsFileInDatabase(file, connection):
 
 def InsertFileMetadata(filename, file_uuid, connection):
     logger.info("Inserting "+filename+" into the database.")
+    entertainment_type = file_uuid.split("/")[3]  # Extract the entertainment type from the path
     try:
-        connection.insert("INSERT INTO videos (filename, cdn_path, title, uploaded) VALUES (\""+file_uuid+"\",\""+file_uuid.replace("/media","")+"\",\""+filename+"\", NOW())")
+        connection.insert("INSERT INTO videos (filename, cdn_path, title, uploaded, entertainment_type) VALUES (\""+file_uuid+"\",\""+file_uuid.replace("/media","")+"\",\""+filename+"\", NOW(), \""+entertainment_type+"\")")
         db_inserts.inc()
     except Exception as e:
         logger.error(f'Failed to insert to db, failed with error {e}')
