@@ -1,4 +1,5 @@
 
+import asyncio
 import os
 import pathlib
 import subprocess
@@ -24,10 +25,11 @@ async def process_video(file_name, file_path):
             extension = "."+file_path.split(".")[-1].lower()
 
             if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES:
-                file_path = convert_to_browser_friendly_file_type(file_path, extension)
+                file_path = await convert_to_browser_friendly_file_type(file_path, extension)
 
             clean_file_name = scrub_file_name(file_path)
-            insert_file_metadata(file_name, clean_file_name)
+            await insert_file_metadata(file_name, clean_file_name)
+            metric_emitter.files_processed.inc()
     else:
         log.info("File is already processed and stored")
 
@@ -45,20 +47,28 @@ async def insert_file_metadata(filename, file_uuid):
         metric_emitter.db_connection_failures.inc()
         raise e
     
-def convert_to_browser_friendly_file_type(file, extension):
+async def convert_to_browser_friendly_file_type(file, extension):
     try:
-        log.info("Starting file format conversion for '"+file+"'.")
+        log.info(f"Starting file format conversion for '{file}'.")
         new_file = file.replace(extension, ".mp4")
         with metric_emitter.file_conversion_duration.time():
-            subprocess.run(["ffmpeg", "-y","-i", file, "-c", "copy", new_file], check=True) #added check = True
+            process = await asyncio.create_subprocess_exec(
+                "ffmpeg", "-y", "-i", file, "-c", "copy", new_file
+            )
+            await process.communicate()
+            if process.returncode != 0:
+                raise subprocess.CalledProcessError(process.returncode, process.args)
         metric_emitter.files_converted.inc()
-        subprocess.run(["rm", file], check=True) #added check=True
-        log.info("Conversion completed for file '"+file+"'")
 
+        process = await asyncio.create_subprocess_exec("rm", file)
+        await process.communicate()
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(process.returncode, process.args)
+
+        log.info(f"Conversion completed for file '{file}'")
         return new_file
     except subprocess.CalledProcessError as e:
-        print(f'Command {e.cmd} failed with error {e.returncode}')
-        log.error(f'Command {e.cmd} failed with error {e.returncode}')
+        log.error(f"Command {e.cmd} failed with error {e.returncode}")
         raise e
 
 def scrub_file_name(filePath):
@@ -84,7 +94,6 @@ def scrub_file_name(filePath):
 
     os.rename(filePath, new_file_path)
     log.info(f"renamed '{filePath}' to '{new_file_path}'.") #Using f strings is cleaner.
-    metric_emitter.files_processed.inc()
     return new_file_path
 
 def is_file_fully_downloaded(file_path, check_interval=5):
