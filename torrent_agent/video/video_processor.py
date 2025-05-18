@@ -53,23 +53,33 @@ async def convert_to_browser_friendly_file_type(file, extension):
         log.info(f"Starting file format conversion for '{file}'.")
         new_file = file.replace(extension, ".mp4")
         with metric_emitter.file_conversion_duration.time():
+            # Start the FFmpeg process
             process = await asyncio.create_subprocess_exec(
-                "ffmpeg", "-y", "-i", file, "-c", "copy", new_file
+                "ffmpeg", "-y", "-i", file, "-c", "copy", new_file,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
             )
-            await process.communicate()
+            stdout, stderr = await process.communicate()
+
+            # Check the return code
             if process.returncode != 0:
-                raise subprocess.CalledProcessError(process.returncode, process.args)
+                log.error(f"FFmpeg failed with return code {process.returncode}. Command: ffmpeg -y -i {file} -c copy {new_file}")
+                log.error(f"FFmpeg stderr: {stderr.decode().strip()}")
+                raise Exception(f"FFmpeg failed with return code {process.returncode}")
+
         metric_emitter.files_converted.inc()
 
+        # Remove the original file
         process = await asyncio.create_subprocess_exec("rm", file)
         await process.communicate()
         if process.returncode != 0:
-            raise subprocess.CalledProcessError(process.returncode, process.args)
+            log.error(f"Failed to remove original file '{file}' with return code {process.returncode}")
+            raise Exception(f"Failed to remove original file '{file}'")
 
         log.info(f"Conversion completed for file '{file}'")
         return new_file
-    except subprocess.CalledProcessError as e:
-        log.error(f"Command {e.cmd} failed with error {e.returncode}")
+    except Exception as e:
+        log.error(f"An error occurred during file conversion: {e}")
         raise e
 
 def scrub_file_name(filePath):
