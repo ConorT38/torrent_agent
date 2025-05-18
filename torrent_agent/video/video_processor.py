@@ -34,8 +34,9 @@ async def process_video(file_name, file_path):
         log.info("File is already processed and stored")
 
 async def insert_file_metadata(filename, file_uuid):
-    log.info("Inserting " + filename + " into the database.")
-    entertainment_type = file_uuid.split("/")[3]  # Extract the entertainment type from the path
+    
+    entertainment_type = str(file_uuid.split("/")[3])  # Extract the entertainment type from the path
+    log.info("Inserting " + filename + " into the database. "+entertainment_type)
     try:
         await connection.insert(
             "INSERT INTO videos (filename, cdn_path, title, uploaded, entertainment_type) VALUES (%s, %s, %s, NOW(), %s)",
