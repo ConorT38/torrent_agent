@@ -29,7 +29,7 @@ async def main():
             elif extension in IMAGE_FILETYPES:
                 await process_image(file_name, file_path)
             else:
-                log.info(f"File '{file_name}' is not a supported format. Skipping.")
+                log.info(f"File '{file_name}' of type '{extension}' is not a supported format. Skipping.")
                 continue
         except Exception as e:
             log.error(f"An error occurred while processing file '{file_name}': {e}")
