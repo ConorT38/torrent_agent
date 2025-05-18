@@ -1,8 +1,6 @@
 
-import asyncio
 import os
 import pathlib
-import subprocess
 import time
 import torrent_agent.common.logger as logger
 from torrent_agent.common.database_utils import is_file_in_database
