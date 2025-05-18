@@ -37,6 +37,7 @@ async def insert_file_metadata(filename, file_uuid):
     
     entertainment_type = str(file_uuid.split("/")[3])  # Extract the entertainment type from the path
     log.info("Inserting " + filename + " into the database. "+entertainment_type)
+    log.debug(f"Insert values: file_uuid={file_uuid}, cdn_path={file_uuid.replace('/media', '')}, title={filename}, entertainment_type={entertainment_type}")
     try:
         await connection.insert(
             "INSERT INTO videos (filename, cdn_path, title, uploaded, entertainment_type) VALUES (%s, %s, %s, NOW(), %s)",
