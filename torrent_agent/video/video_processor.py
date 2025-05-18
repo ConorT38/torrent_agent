@@ -9,10 +9,12 @@ from torrent_agent.common.database_utils import is_file_in_database
 from torrent_agent.common.metrics import MetricEmitter
 from torrent_agent.database.database_connector import DatabaseConnector
 from torrent_agent.common.constants import NON_BROWSER_FRIENDLY_VIDEO_FILETYPES
+from torrent_agent.video.video_conversion_queue import VideoConversionQueue, VideoConversionQueueEntry
 
 log = logger.get_logger()
 metric_emitter = MetricEmitter()
 connection = DatabaseConnector()
+video_conversion_queue = VideoConversionQueue()
 
 async def process_video(file_name, file_path):
     if not await is_file_in_database(file_name):
@@ -25,7 +27,7 @@ async def process_video(file_name, file_path):
             extension = "."+file_path.split(".")[-1].lower()
 
             if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES:
-                file_path = await convert_to_browser_friendly_file_type(file_path, extension)
+                file_path = convert_to_browser_friendly_file_type(file_path, extension)
 
             clean_file_name = scrub_file_name(file_path)
             await insert_file_metadata(file_name, clean_file_name)
@@ -48,39 +50,12 @@ async def insert_file_metadata(filename, file_uuid):
         metric_emitter.db_connection_failures.inc()
         raise e
     
-async def convert_to_browser_friendly_file_type(file, extension):
-    try:
-        log.info(f"Starting file format conversion for '{file}'.")
-        new_file = file.replace(extension, ".mp4")
-        with metric_emitter.file_conversion_duration.time():
-            # Start the FFmpeg process
-            process = await asyncio.create_subprocess_exec(
-                "ffmpeg", "-y", "-i", file, "-c", "copy", new_file,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
-            stdout, stderr = await process.communicate()
+def convert_to_browser_friendly_file_type(file, extension):
+    new_file = file.replace(extension, ".mp4")
+    conversion_job = VideoConversionQueueEntry(file, new_file)
+    video_conversion_queue.add_to_queue(conversion_job)
 
-            # Check the return code
-            if process.returncode != 0:
-                log.error(f"FFmpeg failed with return code {process.returncode}. Command: ffmpeg -y -i {file} -c copy {new_file}")
-                log.error(f"FFmpeg stderr: {stderr.decode().strip()}")
-                raise Exception(f"FFmpeg failed with return code {process.returncode}")
-
-        metric_emitter.files_converted.inc()
-
-        # Remove the original file
-        process = await asyncio.create_subprocess_exec("rm", file)
-        await process.communicate()
-        if process.returncode != 0:
-            log.error(f"Failed to remove original file '{file}' with return code {process.returncode}")
-            raise Exception(f"Failed to remove original file '{file}'")
-
-        log.info(f"Conversion completed for file '{file}'")
-        return new_file
-    except Exception as e:
-        log.error(f"An error occurred during file conversion: {e}")
-        raise e
+    return new_file
 
 def scrub_file_name(filePath):
     """
