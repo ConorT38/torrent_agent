@@ -40,8 +40,7 @@ async def insert_file_metadata(filename, file_uuid):
     log.debug(f"Insert values: file_uuid={file_uuid}, cdn_path={file_uuid.replace('/media', '')}, title={filename}, entertainment_type={entertainment_type}")
     try:
         await connection.insert(
-            "INSERT INTO videos (filename, cdn_path, title, uploaded, entertainment_type) VALUES (%s, %s, %s, NOW(), %s)",
-            (file_uuid, file_uuid.replace("/media", ""), filename, entertainment_type)
+            f"INSERT INTO videos (filename, cdn_path, title, uploaded, entertainment_type) VALUES ('{file_uuid}', '{file_uuid.replace('/media', '')}', '{filename}', NOW(), '{entertainment_type}')"
         )
         metric_emitter.db_inserts.inc()
     except Exception as e:
