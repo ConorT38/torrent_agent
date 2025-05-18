@@ -27,7 +27,7 @@ async def process_video(file_name, file_path):
             extension = "."+file_path.split(".")[-1].lower()
 
             if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES:
-                file_path = convert_to_browser_friendly_file_type(file_path, extension)
+                file_path = await convert_to_browser_friendly_file_type(file_path, extension)
 
             clean_file_name = scrub_file_name(file_path)
             await insert_file_metadata(file_name, clean_file_name)
@@ -50,10 +50,10 @@ async def insert_file_metadata(filename, file_uuid):
         metric_emitter.db_connection_failures.inc()
         raise e
     
-def convert_to_browser_friendly_file_type(file, extension):
+async def convert_to_browser_friendly_file_type(file, extension):
     new_file = file.replace(extension, ".mp4")
     conversion_job = VideoConversionQueueEntry(file, new_file)
-    video_conversion_queue.add_to_queue(conversion_job)
+    await video_conversion_queue.add_to_queue(conversion_job)
 
     return new_file
 
