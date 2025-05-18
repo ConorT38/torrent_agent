@@ -7,12 +7,35 @@ from torrent_agent.common import logger
 from torrent_agent.common.constants import BROWSER_FRIENDLY_VIDEO_FILETYPES, IMAGE_FILETYPES, NON_BROWSER_FRIENDLY_VIDEO_FILETYPES
 from torrent_agent.common.metrics import MetricEmitter
 from torrent_agent.image.image_processor import process_image
+from torrent_agent.video.video_conversion_queue import VideoConversionQueue
 from torrent_agent.video.video_processor import process_video
 
 metric_emitter = MetricEmitter()
 log = logger.get_logger()
+video_conversion_queue = VideoConversionQueue()
+
+async def video_conversion_worker():
+    """
+    Worker task to process video conversion tasks from the queue.
+    """
+    while True:
+        result = await video_conversion_queue.get()
+        if result is None:
+            continue
+        file_name, file_path = result
+        try:
+            log.info(f"Starting video conversion for '{file_name}'...")
+            await process_video(file_name, file_path)
+            log.info(f"Video conversion completed for '{file_name}'.")
+        except Exception as e:
+            log.error(f"Error during video conversion for '{file_name}': {e}")
+        finally:
+            # Mark the task as done
+            video_conversion_queue.task_done()
 
 async def main():
+    asyncio.create_task(video_conversion_worker())
+
     for file_path in glob.glob("/mnt/ext1/**/*.*", recursive=True):
         # Skip directories
         if not os.path.isfile(file_path):

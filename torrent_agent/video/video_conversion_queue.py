@@ -39,6 +39,15 @@ class VideoConversionQueue:
     async def add_to_queue(self, video_conversion_entry: VideoConversionQueueEntry):
         await self.queue.put(video_conversion_entry)
         print(f"Added {str(video_conversion_entry)} to conversion queue.")
+    
+    async def get(self):
+        if not self.queue.empty():
+            video_conversion_entry = await self.queue.get()
+            print(f"Retrieved {str(video_conversion_entry)} from conversion queue.")
+            return video_conversion_entry
+        else:
+            print("Queue is empty.")
+            return None
 
     async def process_queue(self):
         while not self.queue.empty():
