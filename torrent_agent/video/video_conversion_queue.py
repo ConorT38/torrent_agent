@@ -43,10 +43,8 @@ class VideoConversionQueue:
     async def get(self):
         if not self.queue.empty():
             video_conversion_entry = await self.queue.get()
-            print(f"Retrieved {str(video_conversion_entry)} from conversion queue.")
             return video_conversion_entry
         else:
-            print("Queue is empty.")
             return None
 
     async def process_queue(self):
