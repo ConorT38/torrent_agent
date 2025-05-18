@@ -18,12 +18,11 @@ async def video_conversion_worker():
     """
     Worker task to process video conversion tasks from the queue.
     """
-    while True:
-        try:
-            log.info("Processing video conversion queue...")
-            await video_conversion_queue.process_queue()
-        except Exception as e:
-            log.error(f"Error while processing video conversion queue: {e}")
+    try:
+        log.info("Processing video conversion queue...")
+        await video_conversion_queue.process_queue()
+    except Exception as e:
+        log.error(f"Error while processing video conversion queue: {e}")
 
 async def main():
     asyncio.create_task(video_conversion_worker())
