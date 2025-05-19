@@ -49,6 +49,7 @@ async def insert_file_metadata(filename, file_uuid):
         raise e
     
 async def convert_to_browser_friendly_file_type(file, extension):
+    log.info(f"Converting '{file}' to a browser-friendly format. '{extension}' -> '.mp4'")
     new_file = file.replace(extension, ".mp4")
     conversion_job = VideoConversionQueueEntry(file, new_file)
     await video_conversion_queue.add_to_queue(conversion_job)

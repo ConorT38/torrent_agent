@@ -12,18 +12,18 @@ from torrent_agent.video.video_processor import process_video
 
 metric_emitter = MetricEmitter()
 log = logger.get_logger()
-video_conversion_queue = VideoConversionQueue()
-
-async def video_conversion_worker():
-    """
-    Worker task to process video conversion tasks from the queue.
-    """
-    try:
-        await video_conversion_queue.process_queue()
-    except Exception as e:
-        log.error(f"Error while processing video conversion queue: {e}")
 
 async def main():
+    video_conversion_queue = VideoConversionQueue()
+
+    async def video_conversion_worker():
+        """
+        Worker task to process video conversion tasks from the queue.
+        """
+        try:
+            await video_conversion_queue.process_queue()
+        except Exception as e:
+            log.error(f"Error while processing video conversion queue: {e}")
     asyncio.create_task(video_conversion_worker())
 
     for file_path in glob.glob("/mnt/ext1/**/*.*", recursive=True):
