@@ -8,13 +8,14 @@ from torrent_agent.common.constants import BROWSER_FRIENDLY_VIDEO_FILETYPES, IMA
 from torrent_agent.common.metrics import MetricEmitter
 from torrent_agent.image.image_processor import process_image
 from torrent_agent.video.video_conversion_queue import VideoConversionQueue
-from torrent_agent.video.video_processor import process_video
+from torrent_agent.video.video_processor import VideoProcessor, process_video
 
 metric_emitter = MetricEmitter()
 log = logger.get_logger()
 
 async def main():
     video_conversion_queue = VideoConversionQueue()
+    video_processor = VideoProcessor(video_conversion_queue)
 
     async def video_conversion_worker():
         """
@@ -24,7 +25,7 @@ async def main():
             await video_conversion_queue.process_queue()
         except Exception as e:
             log.error(f"Error while processing video conversion queue: {e}")
-            
+
     asyncio.create_task(video_conversion_worker())
 
     for file_path in glob.glob("/mnt/ext1/**/*.*", recursive=True):
@@ -39,7 +40,7 @@ async def main():
         try:
             extension = "." + file_path.split(".")[-1].lower()
             if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES or extension in BROWSER_FRIENDLY_VIDEO_FILETYPES:
-                await process_video(file_name, file_path)
+                await video_processor.process_video(file_name, file_path)
             elif extension in IMAGE_FILETYPES:
                 await process_image(file_name, file_path)
             else:
