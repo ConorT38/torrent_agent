@@ -5,48 +5,42 @@ import time
 import torrent_agent.common.logger as logger
 from torrent_agent.common.database_utils import is_file_in_database
 from torrent_agent.common.metrics import MetricEmitter
+from torrent_agent.database.cache.videos_cache import VideosRepositoryCache
 from torrent_agent.database.database_connector import DatabaseConnector
 from torrent_agent.common.constants import NON_BROWSER_FRIENDLY_VIDEO_FILETYPES
+from torrent_agent.database.videos_repository import VideosRepository
+from torrent_agent.model.video import Video
 from torrent_agent.video.video_conversion_queue import VideoConversionQueue, VideoConversionQueueEntry
 
 log = logger.get_logger()
 metric_emitter = MetricEmitter()
 connection = DatabaseConnector()
+repository = VideosRepositoryCache(VideosRepository(connection))
 video_conversion_queue = VideoConversionQueue()
 
 async def process_video(file_name, file_path):
-    if not await is_file_in_database(file_name):
+    if await repository.get_video(file_name) is None:
 
-            # Skip files that are still downloading
-            if not is_file_fully_downloaded(file_path):
-                log.info(f"File '{file_name}' is still downloading. Skipping.")
-                return
+        # Skip files that are still downloading
+        if not is_file_fully_downloaded(file_path):
+            log.info(f"File '{file_name}' is still downloading. Skipping.")
+            return
 
-            extension = "."+file_path.split(".")[-1].lower()
+        extension = "."+file_path.split(".")[-1].lower()
 
-            if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES:
-                file_path = await convert_to_browser_friendly_file_type(file_path, extension)
+        if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES:
+            file_path = await convert_to_browser_friendly_file_type(file_path, extension)
 
-            clean_file_name = scrub_file_name(file_path)
-            await insert_file_metadata(file_name, clean_file_name)
-            metric_emitter.files_processed.inc()
+        clean_file_name = scrub_file_name(file_path)
+        entertainment_type = str(clean_file_name.split("/")[3])  # Extract the entertainment type from the path
+        cdn_path = clean_file_name.replace('/mnt/ext1', '')
+        title = clean_file_name.split("/")[-1].replace(extension, "")  # Extract the title from the file name
+
+        video = Video(file_name=clean_file_name, cdn_path=cdn_path, title=title, entertainment_type=entertainment_type)
+        await repository.add_video(video)
+        metric_emitter.files_processed.inc()
     else:
         log.info("File is already processed and stored")
-
-async def insert_file_metadata(filename, file_uuid):
-    
-    entertainment_type = str(file_uuid.split("/")[3])  # Extract the entertainment type from the path
-    log.info("Inserting " + filename + " into the database. "+entertainment_type)
-    log.debug(f"Insert values: file_uuid={file_uuid}, cdn_path={file_uuid.replace('/mnt/ext1', '')}, title={filename}, entertainment_type={entertainment_type}")
-    try:
-        await connection.insert(
-            f"INSERT INTO videos (filename, cdn_path, title, uploaded, entertainment_type) VALUES ('{file_uuid}', '{file_uuid.replace('/mnt/ext1', '')}', '{filename}', NOW(), '{entertainment_type}')"
-        )
-        metric_emitter.db_inserts.inc()
-    except Exception as e:
-        log.error(f"Failed to insert to db, failed with error {e}")
-        metric_emitter.db_connection_failures.inc()
-        raise e
     
 async def convert_to_browser_friendly_file_type(file, extension):
     log.info(f"Converting '{file}' to a browser-friendly format. '{extension}' -> '.mp4'")
