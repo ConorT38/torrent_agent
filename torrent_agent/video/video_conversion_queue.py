@@ -43,6 +43,21 @@ class VideoConversionQueue:
             return video_conversion_entry
         else:
             return None
+    
+    async def get_entry(self, input_file: str):
+        temp_queue = asyncio.Queue()
+        target_entry = None
+
+        while not self.queue.empty():
+            entry = await self.queue.get()
+            if entry.input_file == input_file:
+                target_entry = entry
+            await temp_queue.put(entry)
+
+        while not temp_queue.empty():
+            await self.queue.put(await temp_queue.get())
+
+        return target_entry
 
     async def process_queue(self):
         while not self.queue.empty():
