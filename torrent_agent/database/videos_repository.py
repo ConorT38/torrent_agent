@@ -22,14 +22,14 @@ class VideosRepository(IVideosDAO):
     
     async def get_video(self, video_id: str) -> 'Video':
         log.info(f"Retrieving video with ID: {video_id}")
-        result = await self.db.query("SELECT * FROM videos WHERE title = \""+video_id+"\" OR filename = \""+video_id+"\"")
+        result = await self.db.query("SELECT filename, cdn_path, title, uploaded, entertainment_type FROM videos WHERE title = \""+video_id+"\" OR filename = \""+video_id+"\"")
         if result:
             video_data = result[0]
             return Video(
-                filename=video_data['filename'],
-                cdn_path=video_data['cdn_path'],
-                title=video_data['title'],
-                uploaded=video_data['uploaded'],
-                entertainment_type=video_data['entertainment_type']
+                filename=video_data[0],
+                cdn_path=video_data[1],
+                title=video_data[2],
+                uploaded=video_data[3],
+                entertainment_type=video_data[4]
             )
         return None
