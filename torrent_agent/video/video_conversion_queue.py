@@ -29,15 +29,9 @@ class VideoConversionQueueEntry:
 class VideoConversionQueue:
     _instance = None
 
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(VideoConversionQueue, cls).__new__(cls, *args, **kwargs)
-        return cls._instance
-
     def __init__(self):
-        if not hasattr(self, "queue"):  # Prevent reinitialization
-            self.queue = asyncio.Queue()
-            self.converter = VideoConverter()
+        self.queue = asyncio.Queue()
+        self.converter = VideoConverter()
 
     async def add_to_queue(self, video_conversion_entry: VideoConversionQueueEntry):
         await self.queue.put(video_conversion_entry)
@@ -58,3 +52,5 @@ class VideoConversionQueue:
                 video_conversion_entry.mark_as_converted()
             except Exception as e:
                 video_conversion_entry.mark_as_failed(str(e))
+            finally:
+                self.queue.task_done()
