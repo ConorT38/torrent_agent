@@ -27,11 +27,11 @@ async def process_video(file_name, file_path):
             return
 
         extension = "."+file_path.split(".")[-1].lower()
+        clean_file_name = scrub_file_name(file_path)
 
         if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES:
-            file_path = await convert_to_browser_friendly_file_type(file_path, extension)
+            clean_file_name = await convert_to_browser_friendly_file_type(file_path, extension)
 
-        clean_file_name = scrub_file_name(file_path)
         entertainment_type = str(clean_file_name.split("/")[3])  # Extract the entertainment type from the path
         cdn_path = clean_file_name.replace('/mnt/ext1', '')
         title = clean_file_name.split("/")[-1].replace(extension, "")  # Extract the title from the file name
