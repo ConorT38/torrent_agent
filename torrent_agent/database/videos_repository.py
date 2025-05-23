@@ -11,10 +11,10 @@ class VideosRepository(IVideosDAO):
         self.table_name = 'videos'
 
     async def add_video(self, video: 'Video'):
-        log.info(f"Inserting {video.filename} into the database.")
+        log.info(f"Inserting {video.file_name} into the database.")
         try:
             await self.db.insert(
-                f"INSERT INTO {self.table_name} (filename, cdn_path, title, uploaded, entertainment_type) VALUES ('{video.filename}', '{video.cdn_path}', '{video.title}', NOW(), '{video.entertainment_type}')"
+                f"INSERT INTO {self.table_name} (filename, cdn_path, title, uploaded, entertainment_type) VALUES ('{video.file_name}', '{video.cdn_path}', '{video.title}', NOW(), '{video.entertainment_type}')"
             )
         except Exception as e:
             log.error(f'Failed to insert to db, failed with error {e}')

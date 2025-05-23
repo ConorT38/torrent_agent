@@ -11,13 +11,13 @@ class ImagesRepository(IImagesDAO):
 
     async def get_image(self, image_id) -> 'Image':
         log.info(f"Retrieving video with ID: {image_id}")
-        result = await self.db.query("SELECT * FROM videos WHERE filename = \""+image_id+"\"")
+        result = await self.db.query("SELECT * FROM videos WHERE filename = ?", [image_id])
         if result:
             video_data = result[0]
             return Image(
-                filename=video_data['filename'],
-                cdn_path=video_data['cdn_path'],
-                uploaded=video_data['uploaded'],
+            file_name=video_data[0],
+            cdn_path=video_data[1],
+            uploaded=video_data[2],
             )
         return None
 
