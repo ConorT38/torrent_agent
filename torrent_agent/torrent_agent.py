@@ -8,7 +8,7 @@ from torrent_agent.common.constants import BROWSER_FRIENDLY_VIDEO_FILETYPES, IMA
 from torrent_agent.common.metrics import MetricEmitter
 from torrent_agent.image.image_processor import process_image
 from torrent_agent.video.video_conversion_queue import VideoConversionQueue
-from torrent_agent.video.video_processor import VideoProcessor, process_video
+from torrent_agent.video.video_processor import VideoProcessor
 
 metric_emitter = MetricEmitter()
 log = logger.get_logger()
