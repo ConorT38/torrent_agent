@@ -1,3 +1,4 @@
+import asyncio
 import subprocess
 from torrent_agent.common import logger
 from torrent_agent.common.metrics import MetricEmitter
@@ -18,15 +19,20 @@ class VideoConverter:
             Deletes the input file after successful conversion and logs the completion.
     """
 
-    def convert(self, input_file: str, output_file: str):
+    async def convert(self, input_file: str, output_file: str):
         try:
             with metric_emitter.file_conversion_duration.time():
-                subprocess.run(["ffmpeg", "-y","-i", input_file, "-c", "copy", output_file], check=True)
+                # Offload the blocking subprocess call to a separate thread
+                await asyncio.to_thread(
+                    subprocess.run,
+                    ["ffmpeg", "-y", "-i", input_file, "-c", "copy", output_file],
+                    check=True
+                )
             metric_emitter.files_converted.inc()
-            
-            subprocess.run(["rm", input_file], check=True) 
-            log.info("Conversion completed for file '"+input_file+"'")
+
+            # Offload the file removal to a separate thread
+            await asyncio.to_thread(subprocess.run, ["rm", input_file], check=True)
+            log.info(f"Conversion completed for file '{input_file}'")
         except subprocess.CalledProcessError as e:
-            print(f'Command {e.cmd} failed with error {e.returncode}')
-            log.error(f'Command {e.cmd} failed with error {e.returncode}')
+            log.error(f"Command {e.cmd} failed with error {e.returncode}")
             raise e
