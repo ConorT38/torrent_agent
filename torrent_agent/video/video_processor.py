@@ -36,7 +36,7 @@ async def process_video(file_name, file_path):
         cdn_path = clean_file_name.replace('/mnt/ext1', '')
         title = clean_file_name.split("/")[-1].replace(extension, "")  # Extract the title from the file name
 
-        video = Video(file_name=clean_file_name, cdn_path=cdn_path, title=title, entertainment_type=entertainment_type)
+        video = Video(file_name=clean_file_name, cdn_path=cdn_path, title=title, entertainment_type=entertainment_type, uploaded=None)
         await repository.add_video(video)
         metric_emitter.files_processed.inc()
     else:
