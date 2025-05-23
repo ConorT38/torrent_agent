@@ -26,7 +26,7 @@ class VideosRepository(IVideosDAO):
         if result:
             video_data = result[0]
             return Video(
-                filename=video_data[0],
+                file_name=video_data[0],
                 cdn_path=video_data[1],
                 title=video_data[2],
                 uploaded=video_data[3],
