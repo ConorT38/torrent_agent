@@ -1,6 +1,9 @@
 import asyncio
 
+from torrent_agent.common import logger
 from torrent_agent.video.video_converter import VideoConverter
+
+log = logger.get_logger()
 
 class VideoConversionQueueEntry:
     def __init__(self, input_file: str, output_file: str):
@@ -12,12 +15,12 @@ class VideoConversionQueueEntry:
 
     def mark_as_converted(self):
         self.is_converted = True
-        print(f"Video {self.input_file} has been marked as converted.")
+        log.info(f"Video {self.input_file} has been marked as converted.")
 
     def mark_as_failed(self, error_message: str):
         self.is_failed = True
         self.error_message = error_message
-        print(f"Video {self.input_file} conversion failed: {error_message}")
+        log.info(f"Video {self.input_file} conversion failed: {error_message}")
     
     def __str__(self):
         status = "Converted" if self.is_converted else "Failed" if self.is_failed else "Pending"
@@ -38,7 +41,7 @@ class VideoConversionQueue:
 
     async def add_to_queue(self, video_conversion_entry: VideoConversionQueueEntry):
         await self.queue.put(video_conversion_entry)
-        print(f"Added {str(video_conversion_entry)} to conversion queue.")
+        log.info(f"Added {str(video_conversion_entry)} to conversion queue.")
     
     async def get(self):
         if not self.queue.empty():
