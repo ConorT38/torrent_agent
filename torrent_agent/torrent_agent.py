@@ -21,21 +21,10 @@ async def main():
         """
         Worker task to process video conversion tasks from the queue.
         """
-        while True:
-            video_conversion_entry = await video_conversion_queue.queue.get()
-            try:
-                log.info(f"Processing video conversion: {video_conversion_entry}")
-                await video_processor.convert_to_browser_friendly_file_type(
-                    video_conversion_entry.input_file,
-                    video_conversion_entry.output_file
-                )
-                log.info(f"Completed video conversion: {video_conversion_entry}")
-            except Exception as e:
-                log.error(f"Error while processing video conversion: {e}")
-            finally:
-                video_conversion_queue.queue.task_done()
-
-    asyncio.create_task(video_conversion_worker())
+        try:
+            await video_conversion_queue.process_queue()
+        except Exception as e:
+            log.error(f"Error while processing video conversion queue: {e}")
 
     for file_path in glob.glob("/mnt/ext1/**/*.*", recursive=True):
         # Skip directories
@@ -58,7 +47,8 @@ async def main():
         except Exception as e:
             log.error(f"An error occurred while processing file '{file_name}': {e}")
             continue
-        
+    
+    asyncio.create_task(video_conversion_worker())
     # Wait for all video conversions to complete
     await video_conversion_queue.queue.join()
     log.info("All video conversions completed.")
