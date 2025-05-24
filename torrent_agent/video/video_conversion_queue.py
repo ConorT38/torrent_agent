@@ -44,7 +44,7 @@ class VideoConversionQueue:
         else:
             return None
     
-    async def get_entry(self, input_file: str):
+    async def get_entry(self, input_file: str) -> VideoConversionQueueEntry:
         temp_queue = asyncio.Queue()
         target_entry = None
 
