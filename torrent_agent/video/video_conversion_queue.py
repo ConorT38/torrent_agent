@@ -61,10 +61,10 @@ class VideoConversionQueue:
 
     async def process_queue(self):
         while not self.queue.empty():
-            video_conversion_entry = await self.queue.get()
+            video_conversion_entry: VideoConversionQueueEntry = await self.queue.get()
             try:
                 log.info(f"Converting {str(video_conversion_entry)}")
-                await self.converter.convert(video_conversion_entry)
+                await self.converter.convert(video_conversion_entry.input_file, video_conversion_entry.output_file)
                 video_conversion_entry.mark_as_converted()
             except Exception as e:
                 video_conversion_entry.mark_as_failed(str(e))
