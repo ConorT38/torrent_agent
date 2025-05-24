@@ -45,7 +45,7 @@ class VideoProcessor:
 
             # Wait for the conversion to complete before adding to the repository
             queue_entry = await self.conversion_queue.get_entry(clean_file_name)
-            if queue_entry is not None and not queue_entry.is_complete:
+            if queue_entry is not None and not queue_entry.is_converted:
                 log.info(f"Waiting for conversion of '{clean_file_name}' to complete.")
                 return
 
