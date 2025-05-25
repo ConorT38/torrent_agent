@@ -35,6 +35,17 @@ class VideoConverter:
             # Offload the file removal to a separate thread
             await asyncio.to_thread(subprocess.run, ["rm", input_file], check=True)
             log.info(f"Conversion completed for file '{input_file}'")
-        except subprocess.CalledProcessError as e:
-            log.error(f"Command {e.cmd} failed with error {e.returncode}")
-            raise e
+        except Exception as e:
+            log.error(f"Failed to convert video '{input_file}' to '{output_file}': {e}")
+            try:
+                remux_command = " ".join(["ffmpeg", "-y", "-i", input_file, "-c", "copy", input_file])
+                log.info(f"Attempting remux operation: {remux_command}")
+                await asyncio.to_thread(
+                    subprocess.run,
+                    ["ffmpeg", "-y", "-i", input_file, "-c", "copy", input_file],
+                    check=True
+                )
+                log.info(f"Remux operation completed for file '{input_file}'")
+            except Exception as remux_error:
+                log.error(f"Failed to perform remux operation on '{input_file}': {remux_error}")
+                raise e
