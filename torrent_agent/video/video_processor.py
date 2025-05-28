@@ -3,7 +3,6 @@ import os
 import pathlib
 import time
 import torrent_agent.common.logger as logger
-from torrent_agent.common.database_utils import is_file_in_database
 from torrent_agent.common.metrics import MetricEmitter
 from torrent_agent.database.cache.videos_cache import VideosRepositoryCache
 from torrent_agent.database.database_connector import DatabaseConnector
@@ -16,7 +15,6 @@ log = logger.get_logger()
 metric_emitter = MetricEmitter()
 connection = DatabaseConnector()
 repository = VideosRepositoryCache(VideosRepository(connection))
-video_conversion_queue = VideoConversionQueue()
 
 class VideoProcessor:
     def __init__(self, conversion_queue: VideoConversionQueue):
@@ -38,25 +36,30 @@ class VideoProcessor:
             if queue_entry is not None:
                 log.info(f"File '{clean_file_name}' is already in the conversion queue. Skipping.")
                 return
+            
+            # Wait for the conversion to complete before adding to the repository
+            queue_entry = await self.conversion_queue.get_entry(clean_file_name)
+            if queue_entry is not None:
+                if queue_entry.is_failed:
+                    log.error(f"Conversion of '{clean_file_name}' failed: {queue_entry.error_message}")
+                    return
+                if not queue_entry.is_converted:
+                    log.info(f"Waiting for conversion of '{clean_file_name}' to complete.")
+                    return
+                else:
+                    # Once processing is complete, add the video to the repository
+                    entertainment_type = str(clean_file_name.split("/")[3])  # Extract the entertainment type from the path
+                    cdn_path = clean_file_name.replace('/mnt/ext1', '')
+                    title = clean_file_name.split("/")[-1].replace(extension, "")  # Extract the title from the file name
+
+                    video = Video(file_name=clean_file_name, cdn_path=cdn_path, title=title, entertainment_type=entertainment_type, uploaded=None)
+                    await repository.add_video(video)
+                    metric_emitter.files_processed.inc()
+                    return
 
             # Add to the queue if the file type is non-browser-friendly
             if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES:
                 clean_file_name = await self.convert_to_browser_friendly_file_type(clean_file_name, extension)
-
-            # Wait for the conversion to complete before adding to the repository
-            queue_entry = await self.conversion_queue.get_entry(clean_file_name)
-            if queue_entry is not None and not queue_entry.is_converted:
-                log.info(f"Waiting for conversion of '{clean_file_name}' to complete.")
-                return
-
-            # Once processing is complete, add the video to the repository
-            entertainment_type = str(clean_file_name.split("/")[3])  # Extract the entertainment type from the path
-            cdn_path = clean_file_name.replace('/mnt/ext1', '')
-            title = clean_file_name.split("/")[-1].replace(extension, "")  # Extract the title from the file name
-
-            video = Video(file_name=clean_file_name, cdn_path=cdn_path, title=title, entertainment_type=entertainment_type, uploaded=None)
-            await repository.add_video(video)
-            metric_emitter.files_processed.inc()
         else:
             log.info("File is already processed and stored")
         
