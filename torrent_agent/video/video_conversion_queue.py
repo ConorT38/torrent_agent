@@ -68,7 +68,6 @@ class VideoConversionQueue:
                 video_conversion_entry.mark_as_converted()
             except Exception as e:
                 video_conversion_entry.mark_as_failed(str(e))
-                log.error(f"Error processing {str(video_conversion_entry)}: {e}")
-                raise e
+                log.error(f"Failed to perform conversion, skipping:  {str(video_conversion_entry)}: {e}")
             finally:
                 self.queue.task_done()
