@@ -21,7 +21,7 @@ repository = VideosRepositoryCache(VideosRepository(connection))
 
 async def main():
     video_conversion_queue = VideoConversionQueue()
-    video_processor = VideoProcessor(video_conversion_queue)
+    video_processor = VideoProcessor(video_conversion_queue, repository)
 
     async def video_conversion_worker():
         """
