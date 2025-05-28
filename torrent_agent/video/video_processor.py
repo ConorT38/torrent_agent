@@ -46,20 +46,22 @@ class VideoProcessor:
                 if not queue_entry.is_converted:
                     log.info(f"Waiting for conversion of '{clean_file_name}' to complete.")
                     return
-                else:
-                    # Once processing is complete, add the video to the repository
-                    entertainment_type = str(clean_file_name.split("/")[3])  # Extract the entertainment type from the path
-                    cdn_path = clean_file_name.replace('/mnt/ext1', '')
-                    title = clean_file_name.split("/")[-1].replace(extension, "")  # Extract the title from the file name
-
-                    video = Video(file_name=clean_file_name, cdn_path=cdn_path, title=title, entertainment_type=entertainment_type, uploaded=None)
-                    await repository.add_video(video)
-                    metric_emitter.files_processed.inc()
-                    return
 
             # Add to the queue if the file type is non-browser-friendly
             if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES:
-                clean_file_name = await self.convert_to_browser_friendly_file_type(clean_file_name, extension)
+                log.debug(f"File '{clean_file_name}' is a non-browser-friendly format: {extension}. Adding to conversion queue.")
+                await self.convert_to_browser_friendly_file_type(clean_file_name, extension)
+                return
+            
+            log.debug(f"File '{clean_file_name}' is already in a browser-friendly format: {extension}")
+            # Once processing is complete, add the video to the repository
+            entertainment_type = str(clean_file_name.split("/")[3])  # Extract the entertainment type from the path
+            cdn_path = clean_file_name.replace('/mnt/ext1', '')
+            title = clean_file_name.split("/")[-1].replace(extension, "")  # Extract the title from the file name
+
+            video = Video(file_name=clean_file_name, cdn_path=cdn_path, title=title, entertainment_type=entertainment_type, uploaded=None)
+            await repository.add_video(video)
+            metric_emitter.files_processed.inc()
         else:
             log.info("File is already processed and stored")
         
