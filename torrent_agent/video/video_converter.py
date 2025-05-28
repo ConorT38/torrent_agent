@@ -21,13 +21,13 @@ class VideoConverter:
 
     async def convert(self, input_file: str, output_file: str):
         try:
-            command = " ".join(["ffmpeg", "-y", "-i", input_file, "-c", "copy","-c:a", "aac", "-movflags", "+faststart", output_file])
-            log.info(f"Conversion started: {command}")
+            command = ["ffmpeg", "-y", "-i", input_file, "-c", "copy","-c:a", "aac", "-movflags", "+faststart", output_file]
+            log.info(f"Conversion started: {" ".join(command)}")
             with metric_emitter.file_conversion_duration.time():
                 # Offload the blocking subprocess call to a separate thread
                 await asyncio.to_thread(
                     subprocess.run,
-                    ["ffmpeg", "-y", "-i", input_file, "-c", "copy", output_file],
+                    command,
                     check=True
                 )
             metric_emitter.files_converted.inc()
@@ -38,11 +38,11 @@ class VideoConverter:
         except Exception as e:
             log.error(f"Failed to convert video '{input_file}' to '{output_file}': {e}")
             try:
-                remux_command = " ".join(["ffmpeg", "-y", "-i", input_file, "-c", "copy", input_file])
-                log.info(f"Attempting remux operation: {remux_command}")
+                remux_command = ["ffmpeg", "-y", "-i", input_file, "-c", "copy", input_file]
+                log.info(f"Attempting remux operation: {" ".join(remux_command)}")
                 await asyncio.to_thread(
                     subprocess.run,
-                    ["ffmpeg", "-y", "-i", input_file, "-c", "copy", input_file],
+                    remux_command,
                     check=True
                 )
                 log.info(f"Remux operation completed for file '{input_file}'")
