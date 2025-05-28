@@ -21,7 +21,19 @@ class VideoConverter:
 
     async def convert(self, input_file: str, output_file: str):
         try:
-            command = ["ffmpeg", "-y", "-i", input_file, "-c", "copy","-c:a", "aac", "-movflags", "+faststart", output_file]
+            command = [
+                        "ffmpeg",
+                        "-y",
+                        "-i", input_file,
+                        "-c:v", "libx264",  # Encode video to H.264 (AVC)
+                        "-preset", "medium", # Controls encoding speed vs. compression efficiency (medium is a good balance)
+                        "-crf", "23",       # Constant Rate Factor: controls video quality (23 is a good default, lower means higher quality/larger file)
+                        "-pix_fmt", "yuv420p", # Ensures compatibility with older players/browsers
+                        "-c:a", "aac",      # Encode audio to AAC
+                        "-b:a", "128k",     # Audio bitrate (adjust as needed, 128k is common for good quality)
+                        "-movflags", "+faststart",
+                        output_file
+                    ]
             log.info(f"Conversion started: {' '.join(command)}")
             with metric_emitter.file_conversion_duration.time():
                 # Offload the blocking subprocess call to a separate thread
@@ -38,7 +50,19 @@ class VideoConverter:
         except Exception as e:
             log.error(f"Failed to convert video '{input_file}' to '{output_file}': {e}")
             try:
-                remux_command = ["ffmpeg", "-y", "-i", input_file, "-c", "copy", input_file]
+                remux_command = [
+                        "ffmpeg",
+                        "-y",
+                        "-i", input_file,
+                        "-c:v", "libx264",  # Encode video to H.264 (AVC)
+                        "-preset", "medium", # Controls encoding speed vs. compression efficiency (medium is a good balance)
+                        "-crf", "23",       # Constant Rate Factor: controls video quality (23 is a good default, lower means higher quality/larger file)
+                        "-pix_fmt", "yuv420p", # Ensures compatibility with older players/browsers
+                        "-c:a", "aac",      # Encode audio to AAC
+                        "-b:a", "128k",     # Audio bitrate (adjust as needed, 128k is common for good quality)
+                        "-movflags", "+faststart",
+                        input_file  # Remux to the same file
+                    ]
                 log.info(f"Attempting remux operation: {' '.join(remux_command)}")
                 await asyncio.to_thread(
                     subprocess.run,
