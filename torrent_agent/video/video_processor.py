@@ -5,23 +5,20 @@ import time
 import torrent_agent.common.logger as logger
 from torrent_agent.common.metrics import MetricEmitter
 from torrent_agent.database.cache.videos_cache import VideosRepositoryCache
-from torrent_agent.database.database_connector import DatabaseConnector
 from torrent_agent.common.constants import NON_BROWSER_FRIENDLY_VIDEO_FILETYPES
-from torrent_agent.database.videos_repository import VideosRepository
 from torrent_agent.model.video import Video
 from torrent_agent.video.video_conversion_queue import VideoConversionQueue, VideoConversionQueueEntry
 
 log = logger.get_logger()
 metric_emitter = MetricEmitter()
-connection = DatabaseConnector()
-repository = VideosRepositoryCache(VideosRepository(connection))
 
 class VideoProcessor:
-    def __init__(self, conversion_queue: VideoConversionQueue):
+    def __init__(self, conversion_queue: VideoConversionQueue, repository: VideosRepositoryCache):
         self.conversion_queue = conversion_queue
+        self.repository = repository
 
     async def process_video(self,file_name, file_path):
-        if await repository.get_video(file_name) is None:
+        if await self.repository.get_video(file_name) is None:
 
             # Skip files that are still downloading
             if not self.is_file_fully_downloaded(file_path):
@@ -60,7 +57,7 @@ class VideoProcessor:
             title = clean_file_name.split("/")[-1].replace(extension, "")  # Extract the title from the file name
 
             video = Video(file_name=clean_file_name, cdn_path=cdn_path, title=title, entertainment_type=entertainment_type, uploaded=None)
-            await repository.add_video(video)
+            await self.repository.add_video(video)
             metric_emitter.files_processed.inc()
         else:
             log.info("File is already processed and stored")

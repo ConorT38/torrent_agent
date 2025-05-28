@@ -6,12 +6,18 @@ from pathlib import Path
 from torrent_agent.common import logger
 from torrent_agent.common.constants import BROWSER_FRIENDLY_VIDEO_FILETYPES, IMAGE_FILETYPES, NON_BROWSER_FRIENDLY_VIDEO_FILETYPES
 from torrent_agent.common.metrics import MetricEmitter
+from torrent_agent.database.cache.videos_cache import VideosRepositoryCache
+from torrent_agent.database.database_connector import DatabaseConnector
+from torrent_agent.database.videos_repository import VideosRepository
 from torrent_agent.image.image_processor import process_image
 from torrent_agent.video.video_conversion_queue import VideoConversionQueue
 from torrent_agent.video.video_processor import VideoProcessor
 
 metric_emitter = MetricEmitter()
 log = logger.get_logger()
+
+connection = DatabaseConnector()
+repository = VideosRepositoryCache(VideosRepository(connection))
 
 async def main():
     video_conversion_queue = VideoConversionQueue()
