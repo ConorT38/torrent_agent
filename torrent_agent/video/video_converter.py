@@ -21,7 +21,7 @@ class VideoConverter:
 
     async def convert(self, input_file: str, output_file: str):
         try:
-            command = " ".join(["ffmpeg", "-y", "-i", input_file, "-c", "copy", output_file])
+            command = " ".join(["ffmpeg", "-y", "-i", input_file, "-c", "copy","-c:a", "aac", "-movflags", "+faststart", output_file])
             log.info(f"Conversion started: {command}")
             with metric_emitter.file_conversion_duration.time():
                 # Offload the blocking subprocess call to a separate thread
