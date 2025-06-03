@@ -9,8 +9,10 @@ def get_logger():
         formatter = logging.Formatter('[%(asctime)s][%(levelname)s] -- %(message)s')
 
         if os.name != 'nt':  # Check if the OS is not Windows
+            log_file_path = '/var/log/home-media-torrent-util/info.log'
+            os.makedirs(os.path.dirname(log_file_path), exist_ok=True)  # Create directories if they don't exist
             # Rotating file handler (5MB max size, keep 3 backups)
-            fh = RotatingFileHandler('/var/log/home-media-torrent-util/info.log', maxBytes=5 * 1024 * 1024, backupCount=3)
+            fh = RotatingFileHandler(log_file_path, maxBytes=5 * 1024 * 1024, backupCount=3)
             fh.setLevel(logging.DEBUG)
             fh.setFormatter(formatter)
             logger.addHandler(fh)
