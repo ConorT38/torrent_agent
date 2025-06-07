@@ -15,7 +15,7 @@ class DatabaseConnector:
 
     def __init__(self):
         if not hasattr(self, "_initialized"):
-            self.host = "127.0.0.1"
+            self.host = "localhost"
             self.user = "root"
             self.password = "raspberry"
             self.database = "homemedia"
