@@ -72,7 +72,7 @@ if __name__ == "__main__":
                 except Exception as e:
                     log.error(f"An error occurred: {e}")
                     metric_emitter.agent_runs_cycles_failed.inc()
-                await asyncio.sleep(10)
+                await asyncio.sleep(300)
 
     asyncio.run(run_agent())
 
