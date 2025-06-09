@@ -11,7 +11,7 @@ from torrent_agent.database.cache.videos_cache import VideosRepositoryCache
 from torrent_agent.database.database_connector import DatabaseConnector
 from torrent_agent.database.images_repository import ImagesRepository
 from torrent_agent.database.videos_repository import VideosRepository
-from torrent_agent.image.image_processor import ImageProcessor, process_image
+from torrent_agent.image.image_processor import ImageProcessor
 from torrent_agent.video.video_conversion_queue import VideoConversionQueue
 from torrent_agent.video.video_processor import VideoProcessor
 

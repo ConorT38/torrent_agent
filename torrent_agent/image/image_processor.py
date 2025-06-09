@@ -27,13 +27,3 @@ class ImageProcessor:
                 return
         else:
             log.info("File is already processed and stored: " + file_name)
-
-    async def insert_file_metadata(filename, file_path):
-        log.info("Inserting "+filename+" into the database.")
-        try:
-            await connection.insert("INSERT INTO images (filename, cdn_path, uploaded) VALUES (\""+filename+"\",\""+file_path.replace("/mnt/ext1","")+"\", NOW())")
-            metric_emitter.db_inserts.inc()
-        except Exception as e:
-            log.error(f'Failed to insert to db, failed with error {e}')
-            metric_emitter.db_connection_failures.inc()
-            raise e 

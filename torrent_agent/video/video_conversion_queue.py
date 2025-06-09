@@ -1,9 +1,11 @@
 import asyncio
 
 from torrent_agent.common import logger
+from torrent_agent.common.metrics import MetricEmitter
 from torrent_agent.video.video_converter import VideoConverter
 
 log = logger.get_logger()
+metric_emitter = MetricEmitter()
 
 class VideoConversionQueueEntry:
     def __init__(self, input_file: str, output_file: str):
@@ -64,8 +66,10 @@ class VideoConversionQueue:
             video_conversion_entry: VideoConversionQueueEntry = await self.queue.get()
             try:
                 log.info(f"Converting {str(video_conversion_entry)}")
-                await self.converter.convert(video_conversion_entry.input_file, video_conversion_entry.output_file)
+                with metric_emitter.file_conversion_duration.time():
+                    await self.converter.convert(video_conversion_entry.input_file, video_conversion_entry.output_file)
                 video_conversion_entry.mark_as_converted()
+                metric_emitter.files_converted.inc()
             except Exception as e:
                 video_conversion_entry.mark_as_failed(str(e))
                 log.error(f"Failed to perform conversion, skipping:  {str(video_conversion_entry)}: {e}")
