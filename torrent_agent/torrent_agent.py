@@ -6,10 +6,12 @@ from pathlib import Path
 from torrent_agent.common import logger
 from torrent_agent.common.constants import BROWSER_FRIENDLY_VIDEO_FILETYPES, IMAGE_FILETYPES, NON_BROWSER_FRIENDLY_VIDEO_FILETYPES
 from torrent_agent.common.metrics import MetricEmitter
+from torrent_agent.database.cache.images_cache import ImagesRepositoryCache
 from torrent_agent.database.cache.videos_cache import VideosRepositoryCache
 from torrent_agent.database.database_connector import DatabaseConnector
+from torrent_agent.database.images_repository import ImagesRepository
 from torrent_agent.database.videos_repository import VideosRepository
-from torrent_agent.image.image_processor import process_image
+from torrent_agent.image.image_processor import ImageProcessor, process_image
 from torrent_agent.video.video_conversion_queue import VideoConversionQueue
 from torrent_agent.video.video_processor import VideoProcessor
 
@@ -17,11 +19,13 @@ metric_emitter = MetricEmitter()
 log = logger.get_logger()
 
 connection = DatabaseConnector()
-repository = VideosRepositoryCache(VideosRepository(connection))
+video_repository = VideosRepositoryCache(VideosRepository(connection))
+image_repository = ImagesRepositoryCache(ImagesRepository(connection))
 
 async def main():
     video_conversion_queue = VideoConversionQueue()
-    video_processor = VideoProcessor(video_conversion_queue, repository)
+    video_processor = VideoProcessor(video_conversion_queue, video_repository)
+    image_processor = ImageProcessor(image_repository)
 
     async def video_conversion_worker():
         """
@@ -46,7 +50,7 @@ async def main():
             if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES or extension in BROWSER_FRIENDLY_VIDEO_FILETYPES:
                 await video_processor.process_video(file_name, file_path)
             elif extension in IMAGE_FILETYPES:
-                await process_image(file_name, file_path)
+                await image_processor.process_image(file_name, file_path)
             else:
                 log.info(f"File '{file_name}' of type '{extension}' is not a supported format. Skipping.")
                 continue
