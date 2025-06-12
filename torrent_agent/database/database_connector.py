@@ -50,23 +50,27 @@ class DatabaseConnector:
                 return await self.query(sql, retry_count)
             raise e
 
-    async def insert(self, sql, retry_count=0):
+    async def insert(self, sql, params=None, retry_count=0):
         loop = asyncio.get_event_loop()
         try:
             def execute_query():
                 conn = self.connection_pool.get_connection()
                 try:
                     with conn.cursor() as mycursor:
-                        mycursor.execute(sql)
+                        if params:
+                            mycursor.execute(sql, params)
+                        else:
+                            mycursor.execute(sql)
                         conn.commit()
+                        return mycursor.lastrowid
                 finally:
                     conn.close()
 
-            await loop.run_in_executor(None, execute_query)
+            return await loop.run_in_executor(None, execute_query)
         except Error as e:
             retry_count += 1
             if retry_count < 3:
-                return await self.insert(sql, retry_count)
+                return await self.insert(sql, params, retry_count)
             raise e
         
     async def fetch_one(self, table, id, retry_count=0):

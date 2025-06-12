@@ -15,9 +15,11 @@ class VideosRepository(IVideosDAO):
 
         log.info(f"Inserting {video.file_name} into the videos table. [{sql}]")
         try:
-            await self.db.insert(
-                sql
-            )
+            last_row_id = await self.db.insert(sql)
+            if "/movies/" in video.cdn_path:
+                movie_sql = f"INSERT INTO movies (name, video_id) VALUES ('{video.file_name}', {last_row_id})"
+                log.info(f"Inserting {video.file_name} into the movies table. [{movie_sql}]")
+                await self.db.insert(movie_sql)
         except Exception as e:
             log.error(f'Failed to insert to db, failed with error {e}')
             raise e
