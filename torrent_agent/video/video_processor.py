@@ -18,7 +18,7 @@ class VideoProcessor:
         self.repository = repository
 
     async def process_video(self,file_name, file_path):
-        if await self.repository.get_video(file_name) is None:
+        if await self.repository.get_video(file_path) is None:
 
             # Skip files that are still downloading
             if not self.is_file_fully_downloaded(file_path):
