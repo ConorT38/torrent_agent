@@ -29,8 +29,11 @@ class VideoConverter:
                         "-preset", "medium", # Controls encoding speed vs. compression efficiency (medium is a good balance)
                         "-crf", "23",       # Constant Rate Factor: controls video quality (23 is a good default, lower means higher quality/larger file)
                         "-pix_fmt", "yuv420p", # Ensures compatibility with older players/browsers
-                        "-c:a", "aac",      # Encode audio to AAC
-                        "-b:a", "128k",     # Audio bitrate (adjust as needed, 128k is common for good quality)
+                        "-profile:v", "baseline", # Ensures compatibility with most browsers
+                        "-level", "3.0",         # Ensures compatibility with most browsers
+                        "-c:a", "aac",           # Encode audio to AAC
+                        "-b:a", "128k",          # Audio bitrate (adjust as needed, 128k is common for good quality)
+                        "-ac", "2",              # Force stereo audio
                         "-movflags", "+faststart",
                         output_file
                     ]
