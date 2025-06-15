@@ -85,6 +85,7 @@ class ThumbnailGenerator:
         image = Image(
             file_name=os.path.basename(image_path),
             cdn_path=image_path.replace('/mnt/ext1', ''),
+            title=os.path.splitext(file_name)[0],
             uploaded=None
         )
         log.debug(f"Creating Image object: {image}")
