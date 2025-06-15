@@ -36,8 +36,8 @@ class ThumbnailGenerator:
             return
 
         # Ensure the file is an .mp4 file
-        if not file_name.endswith(".mp4"):
-            log.error(f"Unsupported file format for {file_name}. Only .mp4 files are supported.")
+        if not file_path.endswith(".mp4"):
+            log.error(f"Unsupported file format for {file_path}. Only .mp4 files are supported.")
             return
 
         video_file = file_path
@@ -70,7 +70,7 @@ class ThumbnailGenerator:
         os.makedirs(self.image_dir, exist_ok=True)
         log.debug(f"Ensured image directory exists: {self.image_dir}")
 
-        image_path = os.path.join(self.image_dir, f"{os.path.splitext(file_name)[0]}.jpeg")
+        image_path = os.path.join(self.image_dir, f"{os.path.splitext(file_name)[0]}-{video_id}.jpeg")
         log.debug(f"Saving thumbnail to path: {image_path}")
 
         if not cv2.imwrite(image_path, frame):
