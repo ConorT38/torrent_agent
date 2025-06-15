@@ -21,12 +21,14 @@ class ImagesRepository(IImagesDAO):
             )
         return None
 
-    async def add_image(self, image: 'Image'):
+    async def add_image(self, image: 'Image') -> int:
         log.info(f"Inserting {image.file_name} into the database.")
         try:
-            await self.db.insert(
-                f"INSERT INTO images (filename, cdn_path, uploaded) VALUES ('{image.file_name}', '{image.cdn_path}', NOW())"
+            last_row_id = await self.db.insert(
+                f"INSERT INTO images (filename, cdn_path, uploaded) VALUES ('{image.file_name}', '{image.cdn_path}', NOW())",
+                return_lastrowid=True
             )
+            return last_row_id
         except Exception as e:
             log.error(f'Failed to insert image to db, failed with error {e}')
             raise e

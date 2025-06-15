@@ -3,7 +3,7 @@ from torrent_agent.model.image import Image
 
 class IImagesDAO(ABC):
     @abstractmethod
-    async def add_image(self, image: 'Image'):
+    async def add_image(self, image: 'Image') -> int:
         """Add a image to the repository."""
         pass
 

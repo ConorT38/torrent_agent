@@ -12,6 +12,7 @@ from torrent_agent.database.database_connector import DatabaseConnector
 from torrent_agent.database.images_repository import ImagesRepository
 from torrent_agent.database.videos_repository import VideosRepository
 from torrent_agent.image.image_processor import ImageProcessor
+from torrent_agent.thumbnail.thumbnail_generator import ThumbnailGenerator
 from torrent_agent.video.video_conversion_queue import VideoConversionQueue
 from torrent_agent.video.video_processor import VideoProcessor
 
@@ -26,6 +27,7 @@ async def main():
     video_conversion_queue = VideoConversionQueue()
     video_processor = VideoProcessor(video_conversion_queue, video_repository)
     image_processor = ImageProcessor(image_repository)
+    thumbnail_generator = ThumbnailGenerator(video_repository, image_repository)
 
     async def video_conversion_worker():
         """
@@ -49,6 +51,7 @@ async def main():
             extension = "." + file_path.split(".")[-1].lower()
             if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES or extension in BROWSER_FRIENDLY_VIDEO_FILETYPES:
                 await video_processor.process_video(file_name, file_path)
+                await thumbnail_generator.generate_thumbnail(file_path, file_name)
             elif extension in IMAGE_FILETYPES:
                 await image_processor.process_image(file_name, file_path)
             else:

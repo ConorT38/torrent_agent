@@ -37,3 +37,26 @@ class VideosRepository(IVideosDAO):
                 entertainment_type=video_data[4]
             )
         return None
+    
+    async def update_video_thumbnail(self, video_id: str, thumbnail_path: str):
+        sql = f"UPDATE {self.table_name} SET thumbnail_path = '{thumbnail_path}' WHERE title = '{video_id}' OR filename = '{video_id}'"
+        log.info(f"Updating thumbnail for video with ID: {video_id}. [{sql}]")
+        try:
+            await self.db.execute(sql)
+        except Exception as e:
+            log.error(f'Failed to update thumbnail in db, failed with error {e}')
+            raise e
+        
+    async def get_video_by_filename(self, filename: str) -> 'Video':
+        log.info(f"Retrieving video with filename: {filename}")
+        result = await self.db.query("SELECT filename, cdn_path, title, uploaded, entertainment_type FROM videos WHERE filename = ?", (filename,))
+        if result:
+            video_data = result[0]
+            return Video(
+                file_name=video_data[0],
+                cdn_path=video_data[1],
+                title=video_data[2],
+                uploaded=video_data[3],
+                entertainment_type=video_data[4]
+            )
+        return None
