@@ -50,7 +50,9 @@ class ThumbnailGenerator:
         # Capture the video and get the half-point frame
         cap = cv2.VideoCapture(video_file)
         if not cap.isOpened():
-            log.error(f"Failed to open video file: {video_file}")
+            log.error(f"Failed to open video file: {video_file}. The file might be corrupted. Deleting the file.")
+            os.remove(video_file)
+            log.info(f"Corrupted video file deleted: {video_file}")
             return
 
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
