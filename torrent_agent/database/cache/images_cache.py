@@ -22,12 +22,12 @@ class ImagesRepositoryCache(IImagesDAO):
             self._initialized = True
 
     async def add_image(self, image: 'Image') -> int:
-        log.info(f"Adding image to cache: {image.title}")
-        if image.title in self.cache:
-            log.info(f"Image '{image.title}' already exists in cache. Skipping addition.")
-            return self.cache[image.title].data.id
-        if image.title not in self.cache:
-            self.cache[image.title] = CacheEntry(data=image)
+        log.info(f"Adding image to cache: {image.cdn_path}")
+        if image.cdn_path in self.cache:
+            log.info(f"Image '{image.cdn_path}' already exists in cache. Skipping addition.")
+            return self.cache[image.cdn_path].data.id
+        if image.cdn_path not in self.cache:
+            self.cache[image.cdn_path] = CacheEntry(data=image)
             return await self.repository.add_image(image)
     
     async def get_image(self, image_id: str) -> 'Image':
