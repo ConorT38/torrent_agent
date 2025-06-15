@@ -89,10 +89,10 @@ class ThumbnailGenerator:
         )
         log.debug(f"Creating Image object: {image}")
 
-        image_id = self.image_repository.add_image(image)
+        image_id = await self.image_repository.add_image(image)
         log.debug(f"Image inserted into repository with ID: {image_id}")
 
-        self.video_repository.update_video_thumbnail(video_id, image_id)
+        await self.video_repository.update_video_thumbnail(video_id, image_id)
         log.debug(f"Updated video record with video_id: {video_id} to include thumbnail_id: {image_id}")
 
         log.info(f"Thumbnail generated and saved at {image_path}.")
