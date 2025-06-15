@@ -82,7 +82,11 @@ class ThumbnailGenerator:
         log.debug("Video capture released.")
 
         # Insert into images table and update videos table
-        image = Image(file_name=os.path.basename(image_path), file_path=image_path, uploaded=None)
+        image = Image(
+            file_name=os.path.basename(image_path),
+            cdn_path=image_path.replace('/mnt/ext1', ''),
+            uploaded=None
+        )
         log.debug(f"Creating Image object: {image}")
 
         image_id = self.image_repository.add_image(image)
