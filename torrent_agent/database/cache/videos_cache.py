@@ -64,7 +64,7 @@ class VideosRepositoryCache(IVideosDAO):
         log.info(f"Retrieving video with file path: {filename}")
         # Check if the video is in the cache
         for cache_entry in self.cache.values():
-            if cache_entry.data.filename == filename:
+            if cache_entry.data.file_name == filename:
                 if not cache_entry.is_expired():
                     return cache_entry.data
                 else:
