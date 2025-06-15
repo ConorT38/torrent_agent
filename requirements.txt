@@ -2,4 +2,4 @@ mysql-connector-python
 prometheus-client
 asyncio
 python-dotenv
-cv2
+opencv-python
