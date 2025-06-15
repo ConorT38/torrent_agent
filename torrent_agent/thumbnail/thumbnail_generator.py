@@ -39,7 +39,7 @@ class ThumbnailGenerator:
             log.error(f"Unsupported file format for {file_name}. Only .mp4 files are supported.")
             return
 
-        video_file = os.path.join(file_path, file_name)
+        video_file = file_path
         log.debug(f"Constructed video file path: {video_file}")
 
         if not os.path.exists(video_file):
