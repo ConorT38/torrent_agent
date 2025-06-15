@@ -26,7 +26,7 @@ class VideosRepository(IVideosDAO):
     
     async def get_video(self, video_id: str) -> 'Video':
         log.info(f"Retrieving video with ID: {video_id}")
-        result = await self.db.query("SELECT filename, cdn_path, title, uploaded, entertainment_type FROM videos WHERE title = \""+video_id+"\" OR filename = \""+video_id+"\"")
+        result = await self.db.query("SELECT filename, cdn_path, title, uploaded, entertainment_type, id FROM videos WHERE title = \""+video_id+"\" OR filename = \""+video_id+"\"")
         if result:
             video_data = result[0]
             return Video(
@@ -34,12 +34,13 @@ class VideosRepository(IVideosDAO):
                 cdn_path=video_data[1],
                 title=video_data[2],
                 uploaded=video_data[3],
-                entertainment_type=video_data[4]
+                entertainment_type=video_data[4],
+                id=video_data[5]
             )
         return None
     
-    async def update_video_thumbnail(self, video_id: str, thumbnail_path: str):
-        sql = f"UPDATE {self.table_name} SET thumbnail_path = '{thumbnail_path}' WHERE title = '{video_id}' OR filename = '{video_id}'"
+    async def update_video_thumbnail(self, video_id: int, thumbnail_id: int):
+        sql = f"UPDATE {self.table_name} SET thumbnail_id = '{thumbnail_id}' WHERE id = {video_id}"
         log.info(f"Updating thumbnail for video with ID: {video_id}. [{sql}]")
         try:
             await self.db.execute(sql)
@@ -49,7 +50,7 @@ class VideosRepository(IVideosDAO):
         
     async def get_video_by_filename(self, filename: str) -> 'Video':
         log.info(f"Retrieving video with filename: {filename}")
-        result = await self.db.query("SELECT filename, cdn_path, title, uploaded, entertainment_type FROM videos WHERE filename = ?", (filename,))
+        result = await self.db.query("SELECT filename, cdn_path, title, uploaded, entertainment_type, id FROM videos WHERE filename = ?", (filename,))
         if result:
             video_data = result[0]
             return Video(
@@ -57,6 +58,7 @@ class VideosRepository(IVideosDAO):
                 cdn_path=video_data[1],
                 title=video_data[2],
                 uploaded=video_data[3],
-                entertainment_type=video_data[4]
+                entertainment_type=video_data[4],
+                id= video_data[5]
             )
         return None

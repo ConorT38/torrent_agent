@@ -49,16 +49,16 @@ class VideosRepositoryCache(IVideosDAO):
             return video
         return None
     
-    async def update_video_thumbnail(self, video_id: str, thumbnail_path: str):
+    async def update_video_thumbnail(self, video_id: int, thumbnail_id: int):
         log.info(f"Updating thumbnail for video with ID: {video_id}")
         if video_id in self.cache:
             cache_entry = self.cache[video_id]
-            cache_entry.data.thumbnail_path = thumbnail_path
+            cache_entry.data.thumbnail_id = thumbnail_id
             log.info(f"Updated thumbnail in cache for video '{video_id}'.")
         else:
             log.info(f"Video '{video_id}' not found in cache. Fetching from repository to update thumbnail.")
         
-        await self.repository.update_video_thumbnail(video_id, thumbnail_path)
+        await self.repository.update_video_thumbnail(video_id, thumbnail_id)
 
     async def get_video_by_filename(self, filename: str) -> 'Video':
         log.info(f"Retrieving video with file path: {filename}")

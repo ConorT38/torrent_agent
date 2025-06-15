@@ -13,7 +13,7 @@ class IVideosDAO(ABC):
         pass
 
     @abstractmethod
-    async def update_video_thumbnail(self, video_id: str, thumbnail_path: str):
+    async def update_video_thumbnail(self, video_id: int, thumbnail_id: int):
         """Update the thumbnail path for a video in the repository."""
         pass
 

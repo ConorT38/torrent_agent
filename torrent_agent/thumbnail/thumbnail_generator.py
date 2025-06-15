@@ -27,7 +27,8 @@ class ThumbnailGenerator:
             log.error("Video not found in the database.")
             return
 
-        video_id, thumbnail_id = video
+        video_id = video.id
+        thumbnail_id = video.thumbnail_id
         log.debug(f"Video ID: {video_id}, Thumbnail ID: {thumbnail_id}")
 
         if thumbnail_id:
