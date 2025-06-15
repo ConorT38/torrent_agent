@@ -43,7 +43,7 @@ class VideosRepository(IVideosDAO):
         sql = f"UPDATE {self.table_name} SET thumbnail_id = '{thumbnail_id}' WHERE id = {video_id}"
         log.info(f"Updating thumbnail for video with ID: {video_id}. [{sql}]")
         try:
-            await self.db.execute_query(sql)
+            await self.db.query(sql)
         except Exception as e:
             log.error(f'Failed to update thumbnail in db, failed with error {e}')
             raise e
