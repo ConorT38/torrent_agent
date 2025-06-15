@@ -40,7 +40,7 @@ class VideosRepository(IVideosDAO):
         return None
     
     async def update_video_thumbnail(self, video_id: int, thumbnail_id: int):
-        sql = f"UPDATE {self.table_name} SET thumbnail_id = '{thumbnail_id}' WHERE id = {video_id}"
+        sql = f"UPDATE {self.table_name} SET thumbnail_id = {thumbnail_id} WHERE id = {video_id}"
         log.info(f"Updating thumbnail for video with ID: {video_id}. [{sql}]")
         try:
             await self.db.query(sql)
