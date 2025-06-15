@@ -69,12 +69,12 @@ class VideosRepositoryCache(IVideosDAO):
                     return cache_entry.data
                 else:
                     log.info(f"Cache entry for file path '{filename}' is expired. Removing from cache.")
-                    del self.cache[cache_entry.data.title]
+                    del self.cache[cache_entry.data.file_name]
         
         # If not in cache or expired, retrieve from the repository
         log.info(f"Video with file path '{filename}' not found in cache. Fetching from repository.")
         video = await self.repository.get_video_by_filename(filename)
         if video:
-            self.cache[video.title] = CacheEntry(data=video)
+            self.cache[video.file_name] = CacheEntry(data=video)
             return video
         return None

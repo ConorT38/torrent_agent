@@ -50,7 +50,7 @@ class VideosRepository(IVideosDAO):
         
     async def get_video_by_filename(self, filename: str) -> 'Video':
         log.info(f"Retrieving video with filename: {filename}")
-        result = await self.db.query(f"SELECT filename, cdn_path, title, uploaded, entertainment_type, id FROM videos WHERE filename = '{filename}'")
+        result = await self.db.query(f"SELECT filename, cdn_path, title, uploaded, entertainment_type, id, thumbnail_id FROM videos WHERE filename = '{filename}'")
         if result:
             video_data = result[0]
             return Video(
@@ -59,6 +59,7 @@ class VideosRepository(IVideosDAO):
                 title=video_data[2],
                 uploaded=video_data[3],
                 entertainment_type=video_data[4],
-                id= video_data[5]
+                id= video_data[5],
+                thumbnail_id=video_data[6] 
             )
         return None

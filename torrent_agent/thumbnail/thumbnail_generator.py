@@ -32,7 +32,7 @@ class ThumbnailGenerator:
         log.debug(f"Video ID: {video_id}, Thumbnail ID: {thumbnail_id}")
 
         if thumbnail_id:
-            log.info("Video already has a thumbnail. Skipping thumbnail generation.")
+            log.info(f"Video {video_id} already has a thumbnail {thumbnail_id}. Skipping thumbnail generation.")
             return
 
         # Ensure the file is an .mp4 file
