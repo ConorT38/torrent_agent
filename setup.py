@@ -10,6 +10,9 @@ setup(
     install_requires=[
         'mysql-connector-python',
         'prometheus-client',
+        'asyncio',       # <--- Add this line
+        'python-dotenv', # <--- Add this line
+        'opencv-python', # <--- Add this line
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',  # Or appropriate status
