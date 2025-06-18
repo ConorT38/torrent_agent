@@ -1,7 +1,7 @@
 import asyncio
 from mysql.connector import pooling, Error
 from threading import Lock
-
+from torrent_agent.common.configuration import Configuration  # Import the Configuration class
 
 class DatabaseConnector:
     _instance = None
@@ -15,10 +15,14 @@ class DatabaseConnector:
 
     def __init__(self):
         if not hasattr(self, "_initialized"):
-            self.host = "localhost"
-            self.user = "root"
-            self.password = "raspberry"
-            self.database = "homemedia"
+            config = Configuration()
+            db_config = config.get_database_config()
+
+            # Use configuration values
+            self.host = db_config["host"]
+            self.user = db_config["user"]
+            self.password = db_config["password"]
+            self.database = db_config["name"]
             self.pool_size = 5
 
             self.connection_pool = pooling.MySQLConnectionPool(

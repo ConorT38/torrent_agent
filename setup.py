@@ -13,6 +13,9 @@ setup(
         'asyncio',      
         'python-dotenv', 
         'opencv-python', 
+        "python-dotenv",
+        "paramiko",
+        "scp",
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',  

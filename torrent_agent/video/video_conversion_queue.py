@@ -2,10 +2,14 @@ import asyncio
 
 from torrent_agent.common import logger
 from torrent_agent.common.metrics import MetricEmitter
+from torrent_agent.remote.remote_processor import RemoteProcessor
 from torrent_agent.video.video_converter import VideoConverter
+from torrent_agent.common.configuration import Configuration
 
 log = logger.get_logger()
 metric_emitter = MetricEmitter()
+remote_processor = RemoteProcessor()  # Assuming RemoteProcessor is defined elsewhere
+configuration = Configuration()
 
 class VideoConversionQueueEntry:
     def __init__(self, input_file: str, output_file: str):
@@ -34,8 +38,18 @@ class VideoConversionQueue:
     def __init__(self):
         self.queue = asyncio.Queue()
         self.converter = VideoConverter()
+        self.remote_requests_left = len(configuration.get_remote_hosts())
 
     async def add_to_queue(self, video_conversion_entry: VideoConversionQueueEntry):
+        if not configuration.is_remote_agent():
+            if self.remote_requests_left > 0:
+                log.info(f"Adding {str(video_conversion_entry)} to remote conversion queue.")
+                await remote_processor.process_file(video_conversion_entry.input_file)
+                self.remote_requests_left -= 1
+                return
+            else:
+                log.warning("No remote requests left, skipping remote conversion.")
+                self.remote_requests_left = len(configuration.get_remote_hosts())
         await self.queue.put(video_conversion_entry)
         log.info(f"Added {str(video_conversion_entry)} to conversion queue.")
     

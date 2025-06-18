@@ -15,6 +15,7 @@ from torrent_agent.image.image_processor import ImageProcessor
 from torrent_agent.thumbnail.thumbnail_generator import ThumbnailGenerator
 from torrent_agent.video.video_conversion_queue import VideoConversionQueue
 from torrent_agent.video.video_processor import VideoProcessor
+from torrent_agent.common.configuration import Configuration  # Import the Configuration class
 
 metric_emitter = MetricEmitter()
 log = logger.get_logger()
@@ -22,6 +23,7 @@ log = logger.get_logger()
 connection = DatabaseConnector()
 video_repository = VideosRepositoryCache(VideosRepository(connection))
 image_repository = ImagesRepositoryCache(ImagesRepository(connection))
+configuration = Configuration()
 
 async def main():
     video_conversion_queue = VideoConversionQueue()
@@ -38,7 +40,7 @@ async def main():
         except Exception as e:
             log.error(f"Error while processing video conversion queue: {e}")
 
-    for file_path in glob.glob("/mnt/ext1/**/*.*", recursive=True):
+    for file_path in glob.glob(f"{configuration.get_media_directory()}/**/*.*", recursive=True):
         # Skip directories
         if not os.path.isfile(file_path):
             log.debug(f"Skipping directory: {file_path}")
@@ -51,7 +53,9 @@ async def main():
             extension = "." + file_path.split(".")[-1].lower()
             if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES or extension in BROWSER_FRIENDLY_VIDEO_FILETYPES:
                 await video_processor.process_video(file_name, file_path)
-                await thumbnail_generator.generate_thumbnail(file_path, file_name)
+
+                if not configuration.is_remote_agent():
+                    await thumbnail_generator.generate_thumbnail(file_path, file_name)
             elif extension in IMAGE_FILETYPES:
                 await image_processor.process_image(file_name, file_path)
             else:
