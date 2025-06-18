@@ -55,7 +55,7 @@ class VideoProcessor:
                 log.info(f"Using remote processor for file '{clean_file_name}'.")
                 # Logic for remote processing can be added here
                 # For example, sending the file to a remote processing service
-                await self.remote_processor.process_video(clean_file_name, extension)
+                await remote_processor.process_file(clean_file_name)
                 return
 
             # Once processing is complete, add the video to the repository
