@@ -62,7 +62,7 @@ class VideoProcessor:
             entertainment_type = str(clean_file_name.split("/")[3])  # Extract the entertainment type from the path
             cdn_path = clean_file_name.replace(configuration.get_media_directory(), '')
             title = clean_file_name.split("/")[-1].replace(extension, "")  # Extract the title from the file name
-
+            clean_file_name = clean_file_name.replace(configuration.get_media_directory(), '/mnt/ext1')
             video = Video(file_name=clean_file_name, cdn_path=cdn_path, title=title, entertainment_type=entertainment_type, uploaded=None)
             await self.repository.add_video(video)
             metric_emitter.files_processed.inc()
