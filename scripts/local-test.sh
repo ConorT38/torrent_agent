@@ -1,17 +1,17 @@
 #!/bin/bash
 
 # Create a virtual environment
-python -m venv venv
+python3 -m venv venv
 
 # Activate the virtual environment
 source venv/Scripts/activate
 
 # Install dependencies
 pip install -r requirements.txt
-python -m pip install wheel
+python3 -m pip install wheel
 
 # Build the wheel package
-python setup.py bdist_wheel
+python3 setup.py bdist_wheel
 
 # Simulate deployment by installing the wheel locally
 pip install ./dist/torrent_agent-0.1.0-py3-none-any.whl --force-reinstall
@@ -21,4 +21,4 @@ echo "Simulating service restart..."
 echo "Service restarted successfully."
 
 # Run the module
-python -m torrent_agent.torrent_agent
+python3 -m torrent_agent.torrent_agent

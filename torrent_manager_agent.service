@@ -1,0 +1,15 @@
+[Unit]
+Description=Torrent Manager Agent Service
+After=network.target
+
+[Service]
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/torrent_manager
+ExecStart=/opt/torrent_agent/venv/bin/python -m torrent_agent.torrent_agent
+Restart=always
+RestartSec=5
+Environment="PYTHONUNBUFFERED=1"
+
+[Install]
+WantedBy=multi-user.target
