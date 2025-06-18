@@ -81,7 +81,7 @@ class RemoteProcessor:
         :param local_path: Path to the local file.
         """
         if not os.path.exists(local_path):
-            log.log(f"File {local_path} does not exist locally.")
+            log.info(f"File {local_path} does not exist locally.")
             return
         base_remote_path = "/mnt/ext1/torrents"
         host = None
@@ -99,12 +99,12 @@ class RemoteProcessor:
             remote_path = f"/home/{self.get_username(host)}/conversions/{os.path.basename(local_path)}"
             
         if not self._file_exists_on_remote(host, remote_path):
-            log.log(f"Copying {local_path} to {host}:{remote_path}")
+            log.info(f"Copying {local_path} to {host}:{remote_path}")
             self._scp_file_to_remote(host, local_path, remote_path)
-            log.log(f"File {local_path} copied to {host}. Removing local file.")
+            log.info(f"File {local_path} copied to {host}. Removing local file.")
             os.remove(local_path)
         else:
-            log.log(f"File already exists on remote host {host}. No action taken.")
+            log.info(f"File already exists on remote host {host}. No action taken.")
 
     def get_username(self, host):
         """
