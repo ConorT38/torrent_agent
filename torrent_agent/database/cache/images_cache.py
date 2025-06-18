@@ -25,7 +25,7 @@ class ImagesRepositoryCache(IImagesDAO):
         log.info(f"Adding image to cache: {image.cdn_path}")
         if image.cdn_path in self.cache:
             log.info(f"Image '{image.cdn_path}' already exists in cache. Skipping addition.")
-            return self.cache[image.cdn_path].data.id
+            return self.cache[image.cdn_path].data
         if image.cdn_path not in self.cache:
             self.cache[image.cdn_path] = CacheEntry(data=image)
             return await self.repository.add_image(image)
