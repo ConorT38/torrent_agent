@@ -10,6 +10,7 @@ ExecStart=/opt/torrent_agent/venv/bin/python -m torrent_agent.torrent_agent
 Restart=always
 RestartSec=5
 Environment="PYTHONUNBUFFERED=1"
+EnvironmentFile=/home/pi/torrent_manager/.env
 
 [Install]
 WantedBy=multi-user.target
