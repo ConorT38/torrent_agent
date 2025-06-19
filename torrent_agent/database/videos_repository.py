@@ -26,7 +26,7 @@ class VideosRepository(IVideosDAO):
     
     async def get_video(self, video_id: str) -> 'Video':
         log.info(f"Retrieving video with ID: {video_id}")
-        result = await self.db.query("SELECT filename, cdn_path, title, uploaded, entertainment_type, id FROM videos WHERE title = \""+video_id+"\" OR filename = \""+video_id+"\"")
+        result = await self.db.query("SELECT filename, cdn_path, title, uploaded, entertainment_type, id, thumbnail_id FROM videos WHERE title = \""+video_id+"\" OR filename = \""+video_id+"\"")
         if result:
             video_data = result[0]
             return Video(
@@ -35,7 +35,8 @@ class VideosRepository(IVideosDAO):
                 title=video_data[2],
                 uploaded=video_data[3],
                 entertainment_type=video_data[4],
-                id=video_data[5]
+                id=video_data[5],
+                thumbnail_id=video_data[6]
             )
         return None
     
