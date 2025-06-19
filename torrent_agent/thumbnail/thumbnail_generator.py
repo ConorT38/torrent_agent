@@ -1,6 +1,7 @@
 import os
 import cv2
 from torrent_agent.common import logger
+from torrent_agent.common.configuration import Configuration
 from torrent_agent.common.metrics import MetricEmitter
 from torrent_agent.database.cache.images_cache import ImagesRepositoryCache
 from torrent_agent.database.cache.videos_cache import VideosRepositoryCache
@@ -8,12 +9,13 @@ from torrent_agent.model.image import Image
 
 log = logger.get_logger()
 metric_emitter = MetricEmitter()
+configuration = Configuration()
 
 class ThumbnailGenerator:
     def __init__(self, video_repository: VideosRepositoryCache, image_repository: ImagesRepositoryCache):
         self.video_repository = video_repository
         self.image_repository = image_repository
-        self.image_dir = "/mnt/ext1/images"
+        self.image_dir = f"{configuration.get_media_directory()}/images"
         log.debug(f"ThumbnailGenerator initialized with image_dir: {self.image_dir}")
 
     async def generate_thumbnail(self, file_path, file_name):
@@ -86,7 +88,7 @@ class ThumbnailGenerator:
         # Insert into images table and update videos table
         image = Image(
             file_name=os.path.basename(image_path),
-            cdn_path=image_path.replace('/mnt/ext1', ''),
+            cdn_path=image_path.replace(configuration.get_media_directory(), ''),
             uploaded=None
         )
         log.debug(f"Creating Image object: {image}")
