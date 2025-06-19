@@ -86,7 +86,7 @@ class RemoteProcessor:
         base_remote_path = "/mnt/ext1/torrents"
         host = None
         remote_path = None
-        if self.configuration.is_remote_agent_host:
+        if self.configuration.is_remote_agent:
             if "movies" in local_path:
                 remote_path = f"{base_remote_path}/movies/{os.path.basename(local_path)}"
             elif "tv" in local_path:
