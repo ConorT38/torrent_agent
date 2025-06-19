@@ -51,7 +51,7 @@ class VideoProcessor:
                 return
             
             log.debug(f"File '{clean_file_name}' is already in a browser-friendly format: {extension}")
-            if configuration.is_remote_agent_host:
+            if configuration.is_remote_agent():
                 log.info(f"Using remote processor for file '{clean_file_name}'.")
                 # Logic for remote processing can be added here
                 # For example, sending the file to a remote processing service

@@ -16,6 +16,8 @@ class Configuration:
         self.db_user = os.getenv("DB_USER")
         self.db_password = os.getenv("DB_PASSWORD")
 
+        self.control_agent_host = os.getenv("CONTROL_AGENT_HOST")
+
         # Remote agent configuration
         self.is_remote_agent_host = os.getenv("IS_REMOTE_AGENT_HOST")
         self.remote_agent_hosts = os.getenv("REMOTE_AGENT_HOSTS", "").split(",") if os.getenv("REMOTE_AGENT_HOSTS") else []
@@ -41,3 +43,10 @@ class Configuration:
         If no remote hosts are configured, returns an empty list.
         """
         return self.remote_agent_hosts if self.remote_agent_hosts else []
+    
+    def get_control_agent_host(self):
+        """
+        Returns the control agent host configured in the environment variables.
+        If not configured, returns None.
+        """
+        return self.control_agent_host if self.control_agent_host else None

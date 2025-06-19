@@ -83,17 +83,18 @@ class RemoteProcessor:
         if not os.path.exists(local_path):
             log.info(f"File {local_path} does not exist locally.")
             return
+        
         base_remote_path = "/mnt/ext1/torrents"
         host = None
         remote_path = None
-        if self.configuration.is_remote_agent:
+        if self.configuration.is_remote_agent():
             if "movies" in local_path:
                 remote_path = f"{base_remote_path}/movies/{os.path.basename(local_path)}"
             elif "tv" in local_path:
                 remote_path = f"{base_remote_path}/tv/{os.path.basename(local_path)}"
             else:
                 remote_path = f"{base_remote_path}/videos/{os.path.basename(local_path)}"
-            host = "192.168.0.23"
+            host = self.configuration.get_control_agent_host()
         else:
             host = self._get_next_host()
             remote_path = f"/home/{self.get_username(host)}/conversions/{os.path.basename(local_path)}"
