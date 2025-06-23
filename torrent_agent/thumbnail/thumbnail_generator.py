@@ -26,7 +26,7 @@ class ThumbnailGenerator:
         log.debug(f"Video lookup result for file_path: {file_path}: {video}")
 
         if not video:
-            log.error("Video not found in the database.")
+            log.error(f"Video {video} not found in the database.")
             return
 
         video_id = video.id
@@ -53,8 +53,6 @@ class ThumbnailGenerator:
         cap = cv2.VideoCapture(video_file)
         if not cap.isOpened():
             log.error(f"Failed to open video file: {video_file}. The file might be corrupted. Deleting the file.")
-            os.remove(video_file)
-            log.info(f"Corrupted video file deleted: {video_file}")
             return
 
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -94,7 +92,6 @@ class ThumbnailGenerator:
         log.debug(f"Creating Image object: {image}")
 
         image_id = await self.image_repository.add_image(image)
-        log.debug(f"Image inserted into repository with ID: {image_id}")
 
         await self.video_repository.update_video_thumbnail(video_id, image_id)
         log.debug(f"Updated video record with video_id: {video_id} to include thumbnail_id: {image_id}")
