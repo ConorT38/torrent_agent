@@ -1,10 +1,12 @@
 import asyncio
 import subprocess
 from torrent_agent.common import logger
+from torrent_agent.common.configuration import Configuration
 from torrent_agent.common.metrics import MetricEmitter
 
 log = logger.get_logger()
 metric_emitter = MetricEmitter()
+configuration = Configuration()
 
 class VideoConverter:
     """
@@ -22,21 +24,23 @@ class VideoConverter:
     async def convert(self, input_file: str, output_file: str):
         try:
             command = [
-                        "ffmpeg",
-                        "-y",
-                        "-i", input_file,
-                        "-c:v", "libx264",  # Encode video to H.264 (AVC)
-                        "-preset", "medium", # Controls encoding speed vs. compression efficiency (medium is a good balance)
-                        "-crf", "23",       # Constant Rate Factor: controls video quality (23 is a good default, lower means higher quality/larger file)
-                        "-pix_fmt", "yuv420p", # Ensures compatibility with older players/browsers
-                        "-profile:v", "main",  # Use Main profile for better compatibility with LG TVs
-                        "-level", "4.0",       # Use Level 4.0 for better compatibility with LG TVs
-                        "-c:a", "aac",         # Encode audio to AAC
-                        "-b:a", "128k",        # Audio bitrate (adjust as needed, 128k is common for good quality)
-                        "-ac", "2",            # Force stereo audio
-                        "-movflags", "+faststart",
-                        output_file
-                    ]
+                "ffmpeg",
+                "-y",
+                "-i", input_file,
+                "-c:v", "libx264",
+                "-preset", "medium",
+                "-crf", "23",
+                "-pix_fmt", "yuv420p",
+                "-profile:v", "main",
+                "-level", "4.0",
+                "-c:a", "aac",
+                "-b:a", "128k",
+                "-ac", "2",
+                "-movflags", "+faststart",
+                output_file
+            ]
+            if not configuration.is_remote_agent:
+                command = ['nice', '-n', '15', 'ionice', '-c', '3'] + command
             log.info(f"Conversion started: {' '.join(command)}")
             with metric_emitter.file_conversion_duration.time():
                 # Offload the blocking subprocess call to a separate thread
@@ -66,6 +70,8 @@ class VideoConverter:
                         "-movflags", "+faststart",
                         input_file  # Remux to the same file
                     ]
+                if not configuration.is_remote_agent:
+                    remux_command = ['nice', '-n', '15', 'ionice', '-c', '3'] + remux_command
                 log.info(f"Attempting remux operation: {' '.join(remux_command)}")
                 await asyncio.to_thread(
                     subprocess.run,
