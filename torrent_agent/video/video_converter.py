@@ -30,7 +30,8 @@ class VideoConverter:
                 await asyncio.to_thread(os.remove, input_file)
                 return
 
-            temp_output_file = f"converting_{output_file}"
+            dir_name, base_name = os.path.split(output_file)
+            temp_output_file = os.path.join(dir_name, f"converting_{base_name}")
 
             command = [
                 "ffmpeg",
