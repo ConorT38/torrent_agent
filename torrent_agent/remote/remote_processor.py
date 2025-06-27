@@ -75,6 +75,34 @@ class RemoteProcessor:
         self.current_host_index = (self.current_host_index + 1) % len(self.hosts)
         return host
 
+    def _has_enough_space_on_remote(self, host, remote_path, min_free_gb=4):
+        """
+        Check if the remote host has at least min_free_gb of free space on the partition containing remote_path.
+        :param host: Remote host IP.
+        :param remote_path: Path on the remote host.
+        :param min_free_gb: Minimum free space in GB to leave on the host.
+        :return: True if enough space, False otherwise.
+        """
+        try:
+            log.debug(f"Checking free space on remote host {host} for path {remote_path}")
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(host, username=self.get_username(host))
+            # Get the partition for the remote_path
+            cmd = f"df -BG --output=avail \"$(dirname '{remote_path}')\" | tail -1 | tr -dc '0-9'"
+            stdin, stdout, stderr = ssh.exec_command(cmd)
+            free_gb_str = stdout.read().decode().strip()
+            ssh.close()
+            if not free_gb_str:
+                log.error(f"Could not determine free space on remote host {host}")
+                return False
+            free_gb = int(free_gb_str)
+            log.debug(f"Remote host {host} has {free_gb}GB free at {remote_path}")
+            return free_gb > min_free_gb
+        except Exception as e:
+            log.error(f"Error checking free space on remote host {host}: {e}")
+            return False
+
     def process_file(self, local_path):
         """
         Process a file by SCPing it to a remote host in a round-robin fashion and removing it locally.
@@ -98,6 +126,10 @@ class RemoteProcessor:
         else:
             host = self._get_next_host()
             remote_path = f"/home/{self.get_username(host)}/conversions/{os.path.basename(local_path)}"
+
+        if not self._has_enough_space_on_remote(host, remote_path):
+            log.error(f"Not enough space on remote host {host} for file {local_path}. Skipping.")
+            return
             
         if not self._file_exists_on_remote(host, remote_path):
             log.info(f"Copying {local_path} to {host}:{remote_path}")
