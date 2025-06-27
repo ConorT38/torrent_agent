@@ -30,7 +30,7 @@ class TorrentManager:
         try:
             # List all torrents with their download directories and status
             result = subprocess.run(
-                ["transmission-remote", "-l"],
+                ["transmission-remote", "--auth","pi:raspberry","-l"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -48,7 +48,7 @@ class TorrentManager:
                 torrent_id = parts[0]
                 # Get detailed info for this torrent
                 info_result = subprocess.run(
-                    ["transmission-remote", "-t", torrent_id, "-i"],
+                    ["transmission-remote", "--auth","pi:raspberry","-t", torrent_id, "-i"],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
