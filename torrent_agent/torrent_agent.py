@@ -13,6 +13,7 @@ from torrent_agent.database.images_repository import ImagesRepository
 from torrent_agent.database.videos_repository import VideosRepository
 from torrent_agent.image.image_processor import ImageProcessor
 from torrent_agent.thumbnail.thumbnail_generator import ThumbnailGenerator
+from torrent_agent.torrent.torrent_manager import TorrentManager
 from torrent_agent.video.video_conversion_queue import VideoConversionQueue
 from torrent_agent.video.video_processor import VideoProcessor
 from torrent_agent.common.configuration import Configuration  # Import the Configuration class
@@ -23,6 +24,7 @@ log = logger.get_logger()
 connection = DatabaseConnector()
 video_repository = VideosRepositoryCache(VideosRepository(connection))
 image_repository = ImagesRepositoryCache(ImagesRepository(connection))
+torrent_manager = TorrentManager()
 configuration = Configuration()
 
 async def main():
@@ -52,6 +54,9 @@ async def main():
         try:
             extension = "." + file_path.split(".")[-1].lower()
             if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES or extension in BROWSER_FRIENDLY_VIDEO_FILETYPES:
+                if torrent_manager.is_tv_show_downloading(file_name):
+                    log.info(f"Show '{file_name}' is still downloading. Skipping.")
+                    continue
                 await video_processor.process_video(file_name, file_path)
 
                 if not configuration.is_remote_agent():
