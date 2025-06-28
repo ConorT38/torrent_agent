@@ -1,7 +1,6 @@
 import os
 import pathlib
 import subprocess
-from torrent_agent import configuration
 from torrent_agent.common import logger
 from torrent_agent.common.configuration import Configuration
 
