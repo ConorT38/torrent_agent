@@ -24,6 +24,11 @@ class VideoProcessor:
     async def process_video(self,file_name, file_path):
         if await self.repository.get_video(file_path) is None:
 
+            # Skip files that start with 'converting_'
+            if file_name.startswith('converting_'):
+                log.info(f"File '{file_name}' starts with 'converting_'. Skipping.")
+                return
+
             # Skip files that are still downloading
             if not self.is_file_fully_downloaded(file_path):
                 log.info(f"File '{file_name}' is still downloading. Skipping.")
