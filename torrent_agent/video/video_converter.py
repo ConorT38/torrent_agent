@@ -41,10 +41,10 @@ class VideoConverter:
                 "-preset", "medium",
                 "-crf", "23",
                 "-pix_fmt", "yuv420p",
-                "-profile:v", "main",
-                "-level", "4.0",
+                "-profile:v", "baseline",  # Change to baseline for broader compatibility
+                "-level", "3.1",          # Lower level for older devices
                 "-c:a", "aac",
-                "-b:a", "128k",
+                "-b:a", "192k",           # Increase audio bitrate for better compatibility
                 "-ac", "2",
                 "-movflags", "+faststart",
                 temp_output_file

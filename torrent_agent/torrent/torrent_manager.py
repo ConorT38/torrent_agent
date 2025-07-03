@@ -3,11 +3,20 @@ import pathlib
 import subprocess
 from torrent_agent.common import logger
 from torrent_agent.common.configuration import Configuration
+from torrent_agent.database.cache.shows_cache import ShowsRepositoryCache
+from torrent_agent.database.dao.show_dao import IShowsDAO
 
 configuration = Configuration()
 log = logger.get_logger()
 
 class TorrentManager:
+    def __init__(self, shows_repository: IShowsDAO):
+        """
+        Initializes the TorrentManager with a ShowsRepository instance.
+        :param shows_repository: An instance of IShowsDAO to interact with the shows database.
+        """
+        self.shows_repository = shows_repository
+
     def is_tv_show_downloading(self, file_path):
         """
         Checks if the directory containing the file is within a '/tv/' folder and,
@@ -72,3 +81,57 @@ class TorrentManager:
             return False
 
         return False
+    
+    async def add_show_to_database(self, folder_path):
+        """
+        Adds a show to the database by checking the folder structure and adding seasons and episodes.
+        """
+
+        # Ensure the folder is within '/torrents/tv/'
+        path = pathlib.Path(folder_path)
+        if '/torrents/tv/' not in str(path).replace("\\", "/").lower():
+            log.error(f"Folder '{folder_path}' is not within '/torrents/tv/'.")
+            return
+
+        # Extract the show folder name (xyz)
+        show_folder = path.name
+        show = await self.shows_repository.get_show_by_folder(show_folder)
+
+        if not show:
+            log.error(f"Show folder '{show_folder}' does not exist in the database.")
+            return
+
+        show_id = show['id']
+
+        # Iterate through subfolders (seasons)
+        for subfolder in path.iterdir():
+            if subfolder.is_dir():
+                try:
+                    # Extract season number from folder name
+                    season_number = int(subfolder.name.replace("Season", "").strip())
+                except ValueError:
+                    log.warning(f"Skipping folder '{subfolder}' as it does not represent a season.")
+                    continue
+
+                # Check if the season already exists
+                existing_season = await self.shows_repository.get_season_by_show_and_number(show_id, season_number)
+                if existing_season:
+                    log.info(f"Season {season_number} for show '{show_folder}' already exists. Skipping.")
+                    continue
+
+                # Add the season
+                await self.shows_repository.add_season(show_id, season_number)
+                log.info(f"Added season {season_number} for show '{show_folder}'.")
+
+                # Check for episodes within the season folder
+                for file in subfolder.iterdir():
+                    if file.is_file() and file.suffix.lower() == ".mkv":
+                        log.info(f"Skipping episode addition in folder '{subfolder}' as it contains an .mkv file.")
+                        break
+                else:
+                    # Add episodes if no .mkv file is found
+                    for file in subfolder.iterdir():
+                        if file.is_file():
+                            episode_name = file.stem
+                            await self.shows_repository.add_episode(show_id, season_number, episode_name)
+                            log.info(f"Added episode '{episode_name}' to season {season_number} for show '{show_folder}'.")

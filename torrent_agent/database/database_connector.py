@@ -18,6 +18,8 @@ class DatabaseConnector:
             config = Configuration()
             db_config = config.get_database_config()
 
+            print("Database configuration:", db_config)
+
             # Use configuration values
             self.host = db_config["host"]
             self.user = db_config["user"]

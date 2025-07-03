@@ -7,9 +7,11 @@ from torrent_agent.common import logger
 from torrent_agent.common.constants import BROWSER_FRIENDLY_VIDEO_FILETYPES, IMAGE_FILETYPES, NON_BROWSER_FRIENDLY_VIDEO_FILETYPES
 from torrent_agent.common.metrics import MetricEmitter
 from torrent_agent.database.cache.images_cache import ImagesRepositoryCache
+from torrent_agent.database.cache.shows_cache import ShowsRepositoryCache
 from torrent_agent.database.cache.videos_cache import VideosRepositoryCache
 from torrent_agent.database.database_connector import DatabaseConnector
 from torrent_agent.database.images_repository import ImagesRepository
+from torrent_agent.database.shows_repository import ShowsRepository
 from torrent_agent.database.videos_repository import VideosRepository
 from torrent_agent.image.image_processor import ImageProcessor
 from torrent_agent.thumbnail.thumbnail_generator import ThumbnailGenerator
@@ -24,7 +26,8 @@ log = logger.get_logger()
 connection = DatabaseConnector()
 video_repository = VideosRepositoryCache(VideosRepository(connection))
 image_repository = ImagesRepositoryCache(ImagesRepository(connection))
-torrent_manager = TorrentManager()
+shows_repository = ShowsRepositoryCache(ShowsRepository(connection))
+torrent_manager = TorrentManager(shows_repository)
 configuration = Configuration()
 
 async def main():
@@ -45,6 +48,8 @@ async def main():
     for file_path in glob.glob(f"{configuration.get_media_directory()}/**/*.*", recursive=True):
         # Skip directories
         if not os.path.isfile(file_path):
+            log.debug(f"Checking if directory is a TV show: {file_path}")
+            await torrent_manager.add_show_to_database(file_path)
             log.debug(f"Skipping directory: {file_path}")
             continue
 
