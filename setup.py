@@ -16,7 +16,7 @@ setup(
         "python-dotenv",
         "paramiko",
         "scp",
-        "aioredis",
+        "redis",
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',  

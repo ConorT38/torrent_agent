@@ -1,4 +1,4 @@
-import aioredis
+import redis.asyncio as redis
 from threading import Lock
 
 from torrent_agent.common.configuration import Configuration  # Import the Configuration class
@@ -29,8 +29,9 @@ class RedisConnector:
             self._initialized = True
 
     async def connect(self):
-        self.redis = await aioredis.from_url(
-            f"redis://{self.host}:{self.port}",
+        self.redis = await redis.Redis(
+            host=self.host,
+            port=self.port,
             password=self.password,
             db=self.db,
             decode_responses=True,
