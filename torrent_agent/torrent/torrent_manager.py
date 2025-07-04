@@ -77,7 +77,7 @@ class TorrentManager:
                         log.info(f"TV show in '{parent_dir}' is still downloading (torrent id {torrent_id}). Skipping.")
                         return True
         except Exception as e:
-            log.error(f"Error checking transmission-remote: {e}")
+            log.error(f"Error checking transmission-remote: {e}", exc_info=True)
             return False
 
         return False
@@ -90,7 +90,7 @@ class TorrentManager:
         # Ensure the folder is within '/torrents/tv/'
         path = pathlib.Path(folder_path)
         if '/torrents/tv/' not in str(path).replace("\\", "/").lower():
-            log.error(f"Folder '{folder_path}' is not within '/torrents/tv/'.")
+            log.error(f"Folder '{folder_path}' is not within '/torrents/tv/'.", exc_info=True)
             return
 
         # Extract the show folder name (xyz)
@@ -98,7 +98,7 @@ class TorrentManager:
         show = await self.shows_repository.get_show_by_folder(show_folder)
 
         if not show:
-            log.error(f"Show folder '{show_folder}' does not exist in the database.")
+            log.error(f"Show folder '{show_folder}' does not exist in the database.", exc_info=True)
             return
 
         show_id = show['id']

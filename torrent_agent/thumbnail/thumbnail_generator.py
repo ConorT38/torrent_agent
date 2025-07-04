@@ -26,7 +26,7 @@ class ThumbnailGenerator:
         log.debug(f"Video lookup result for file_path: {file_path}: {video}")
 
         if not video:
-            log.error(f"Video {video} not found in the database.")
+            log.error(f"Video {video} not found in the database.", exc_info=True)
             return
 
         video_id = video.id
@@ -39,20 +39,20 @@ class ThumbnailGenerator:
 
         # Ensure the file is an .mp4 file
         if not file_path.endswith(".mp4"):
-            log.error(f"Unsupported file format for {file_path}. Only .mp4 files are supported.")
+            log.error(f"Unsupported file format for {file_path}. Only .mp4 files are supported.", exc_info=True)
             return
 
         video_file = file_path
         log.debug(f"Constructed video file path: {video_file}")
 
         if not os.path.exists(video_file):
-            log.error(f"Video file does not exist at path: {video_file}")
+            log.error(f"Video file does not exist at path: {video_file}", exc_info=True)
             return
 
         # Capture the video and get the half-point frame
         cap = cv2.VideoCapture(video_file)
         if not cap.isOpened():
-            log.error(f"Failed to open video file: {video_file}. The file might be corrupted. Deleting the file.")
+            log.error(f"Failed to open video file: {video_file}. The file might be corrupted. Deleting the file.", exc_info=True)
             return
 
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -64,7 +64,7 @@ class ThumbnailGenerator:
 
         ret, frame = cap.read()
         if not ret:
-            log.error(f"Failed to read frame at position {half_frame} from video: {video_file}")
+            log.error(f"Failed to read frame at position {half_frame} from video: {video_file}", exc_info=True)
             cap.release()
             return
 
@@ -76,7 +76,7 @@ class ThumbnailGenerator:
         log.debug(f"Saving thumbnail to path: {image_path}")
 
         if not cv2.imwrite(image_path, frame):
-            log.error(f"Failed to write thumbnail image to path: {image_path}")
+            log.error(f"Failed to write thumbnail image to path: {image_path}", exc_info=True)
             cap.release()
             return
 

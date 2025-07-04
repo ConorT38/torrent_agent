@@ -41,7 +41,7 @@ class VideoProcessor:
             queue_entry = await self.conversion_queue.get_entry(clean_file_name)
             if queue_entry is not None:
                 if queue_entry.is_failed:
-                    log.error(f"Conversion of '{clean_file_name}' failed: {queue_entry.error_message}")
+                    log.error(f"Conversion of '{clean_file_name}' failed: {queue_entry.error_message}", exc_info=True)
                     return
                 if not queue_entry.is_converted:
                     log.info(f"Waiting for conversion of '{clean_file_name}' to complete.")

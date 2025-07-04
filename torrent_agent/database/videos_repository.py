@@ -21,7 +21,7 @@ class VideosRepository(IVideosDAO):
                 log.info(f"Inserting {video.file_name} into the movies table. [{movie_sql}]")
                 await self.db.insert(movie_sql)
         except Exception as e:
-            log.error(f'Failed to insert to db, failed with error {e}')
+            log.error(f'Failed to insert to db, failed with error {e}', exc_info=True)
             raise e
     
     async def get_video(self, video_id: str) -> 'Video':
@@ -46,7 +46,7 @@ class VideosRepository(IVideosDAO):
         try:
             await self.db.insert(sql)
         except Exception as e:
-            log.error(f'Failed to update thumbnail in db, failed with error {e}')
+            log.error(f'Failed to update thumbnail in db, failed with error {e}', exc_info=True)
             raise e
         
     async def get_video_by_filename(self, filename: str) -> 'Video':

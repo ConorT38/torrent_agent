@@ -44,7 +44,7 @@ class RemoteProcessor:
             ssh.close()
             return result == "exists"
         except Exception as e:
-            log.error(f"Error checking file on remote host {host}: {e}")
+            log.error(f"Error checking file on remote host {host}: {e}", exc_info=True)
             return False
 
     def _get_next_host(self):
@@ -75,13 +75,13 @@ class RemoteProcessor:
             free_gb_str = stdout.read().decode().strip()
             ssh.close()
             if not free_gb_str:
-                log.error(f"Could not determine free space on remote host {host}")
+                log.error(f"Could not determine free space on remote host {host}", exc_info=True)
                 return False
             free_gb = int(free_gb_str)
             log.debug(f"Remote host {host} has {free_gb}GB free at {remote_path}")
             return free_gb > min_free_gb
         except Exception as e:
-            log.error(f"Error checking free space on remote host {host}: {e}")
+            log.error(f"Error checking free space on remote host {host}: {e}", exc_info=True)
             return False
         
     def _scp_file_to_remote(self, host, local_path, remote_path):
@@ -109,7 +109,7 @@ class RemoteProcessor:
             log.debug(f"File {local_path} copied to {host}:{remote_path}")
             ssh.close()
         except Exception as e:
-            log.error(f"Error copying file to remote host {host}: {e}")
+            log.error(f"Error copying file to remote host {host}: {e}", exc_info=True)
 
     def process_file(self, local_path):
         """
@@ -138,7 +138,7 @@ class RemoteProcessor:
             remote_path = f"/home/{self.get_username(host)}/conversions/{relative_path}"
 
         if not self._has_enough_space_on_remote(host, remote_path):
-            log.error(f"Not enough space on remote host {host} for file {local_path}. Skipping.")
+            log.error(f"Not enough space on remote host {host} for file {local_path}. Skipping.", exc_info=True)
             return
             
         if not self._file_exists_on_remote(host, remote_path):

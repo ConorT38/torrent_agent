@@ -11,7 +11,7 @@ async def is_file_in_database(file, table="videos"):
     try:
         result = await connection.query("SELECT * FROM "+table+" WHERE title = \""+file+"\" OR filename = \""+file+"\"")
     except Exception as e:
-        log.error(f'Failed to select from db, failed with error {e}')
+        log.error(f'Failed to select from db, failed with error {e}', exc_info=True)
         metric_emitter.db_connection_failures.inc()
         raise e
 

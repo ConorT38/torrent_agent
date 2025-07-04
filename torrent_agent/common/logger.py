@@ -6,7 +6,7 @@ import os
 def get_logger():
     if not hasattr(get_logger, "_logger"):
         logger = logging.getLogger('home-media-torrent-util')
-        formatter = logging.Formatter('[%(asctime)s][%(levelname)s] -- %(message)s')
+        formatter = logging.Formatter('[%(asctime)s][%(levelname)s][%(filename)s:%(lineno)d] -- %(message)s')
 
         if os.name != 'nt':  # Check if the OS is not Windows
             log_file_path = '/var/log/home-media-torrent-util/info.log'

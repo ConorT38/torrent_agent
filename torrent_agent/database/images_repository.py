@@ -28,5 +28,5 @@ class ImagesRepository(IImagesDAO):
                 f"INSERT INTO images (filename, cdn_path, uploaded) VALUES ('{image.file_name}', '{image.cdn_path}', NOW())")
             return last_row_id
         except Exception as e:
-            log.error(f'Failed to insert image to db, failed with error {e}')
+            log.error(f'Failed to insert image to db, failed with error {e}', exc_info=True)
             raise e

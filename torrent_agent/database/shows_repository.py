@@ -30,7 +30,7 @@ class ShowsRepository(IShowsDAO):
                 f"INSERT INTO shows (name, description, thumbnail_id) VALUES ('{show.name}', '{show.description}', {show.thumbnail_id})")
             return last_row_id
         except Exception as e:
-            log.error(f'Failed to insert show to db, failed with error {e}')
+            log.error(f'Failed to insert show to db, failed with error {e}', exc_info=True)
             raise e
         
     async def get_show_by_folder(self, show_folder: str) -> 'Show':
@@ -55,7 +55,7 @@ class ShowsRepository(IShowsDAO):
             )
             return last_row_id
         except Exception as e:
-            log.error(f"Failed to add season to db, failed with error {e}")
+            log.error(f"Failed to add season to db, failed with error {e}", exc_info=True)
             raise e
 
     async def add_episode(self, show_id: str, season_id: int, episode: 'Episode') -> int:
@@ -67,7 +67,7 @@ class ShowsRepository(IShowsDAO):
             )
             return last_row_id
         except Exception as e:
-            log.error(f"Failed to add episode to db, failed with error {e}")
+            log.error(f"Failed to add episode to db, failed with error {e}", exc_info=True)
             raise e
         
     async def get_season_by_show_and_number(self, show_id: str, season_number: int) -> dict:

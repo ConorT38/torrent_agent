@@ -26,7 +26,7 @@ class VideoConverter:
         try:
             # Check if the input file has "converting_" prefix
             if "converting_" in input_file:
-                log.error(f"Input file '{input_file}' indicates a previous failed conversion. Deleting it.")
+                log.error(f"Input file '{input_file}' indicates a previous failed conversion. Deleting it.", exc_info=True)
                 await asyncio.to_thread(os.remove, input_file)
                 return
 
@@ -68,7 +68,7 @@ class VideoConverter:
             await asyncio.to_thread(os.remove, input_file)
             log.info(f"Conversion completed for file '{input_file}'")
         except Exception as e:
-            log.error(f"Failed to convert video '{input_file}' to '{output_file}': {e}")
+            log.error(f"Failed to convert video '{input_file}' to '{output_file}': {e}", exc_info=True)
             try:
                 remux_command = [
                     "ffmpeg",
@@ -93,7 +93,7 @@ class VideoConverter:
                 )
                 log.info(f"Remux operation completed for file '{input_file}'")
             except Exception as remux_error:
-                log.error(f"Failed to perform remux operation on '{input_file}': {remux_error}")
+                log.error(f"Failed to perform remux operation on '{input_file}': {remux_error}", exc_info=True)
                 # Delete the temporary output file if it exists
                 if os.path.exists(temp_output_file):
                     await asyncio.to_thread(os.remove, temp_output_file)

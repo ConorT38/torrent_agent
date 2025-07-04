@@ -43,7 +43,7 @@ async def main():
         try:
             await video_conversion_queue.process_queue()
         except Exception as e:
-            log.error(f"Error while processing video conversion queue: {e}")
+            log.error(f"Error while processing video conversion queue: {e}", exc_info=True)
 
     for file_path in glob.glob(f"{configuration.get_media_directory()}/**/*.*", recursive=True):
         # Skip directories
@@ -72,7 +72,7 @@ async def main():
                 log.info(f"File '{file_name}' of type '{extension}' is not a supported format. Skipping.")
                 continue
         except Exception as e:
-            log.error(f"An error occurred while processing file '{file_name}': {e}")
+            log.error(f"An error occurred while processing file '{file_name}': {e}", exc_info=True)
             continue
     
     asyncio.create_task(video_conversion_worker())
@@ -91,7 +91,7 @@ if __name__ == "__main__":
                     log.info("Completed processing.")
                     metric_emitter.agent_runs_cycles.inc()
                 except Exception as e:
-                    log.error(f"An error occurred: {e}")
+                    log.error(f"An error occurred: {e}", exc_info=True)
                     metric_emitter.agent_runs_cycles_failed.inc()
                 await asyncio.sleep(300)
 

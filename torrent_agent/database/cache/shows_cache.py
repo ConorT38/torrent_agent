@@ -81,7 +81,7 @@ class ShowsRepositoryCache(IShowsDAO):
             self.cache[cache_key] = CacheEntry(data=season_id)
             return season_id
         except Exception as e:
-            log.error(f"Failed to add season to repository, failed with error {e}")
+            log.error(f"Failed to add season to repository, failed with error {e}", exc_info=True)
             raise e
 
     async def add_episode(self, show_id: str, season_id: int, episode: 'Episode') -> int:
@@ -97,7 +97,7 @@ class ShowsRepositoryCache(IShowsDAO):
             self.cache[cache_key] = CacheEntry(data=episode_id)
             return episode_id
         except Exception as e:
-            log.error(f"Failed to add episode to repository, failed with error {e}")
+            log.error(f"Failed to add episode to repository, failed with error {e}", exc_info=True)
             raise e
         
     async def get_season_by_show_and_number(self, show_id: str, season_number: int) -> dict:
