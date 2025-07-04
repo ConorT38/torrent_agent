@@ -44,7 +44,7 @@ class VideoConversionQueue:
         if not configuration.is_remote_agent():
             if self.remote_requests_left > 0:
                 log.info(f"Adding {str(video_conversion_entry)} to remote conversion queue.")
-                await remote_processor.process_file(video_conversion_entry.input_file)
+                remote_processor.process_file(video_conversion_entry.input_file)
                 self.remote_requests_left -= 1
                 return
             else:

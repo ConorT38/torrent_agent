@@ -63,7 +63,7 @@ class VideosRepositoryCache(IVideosDAO):
     async def get_video_by_filename(self, filename: str) -> 'Video':
         log.info(f"Retrieving video with file path: {filename}")
         # Check if the video is in the cache
-        for cache_entry in self.cache.values():
+        for cache_entry in self.cache.copy().values():
             if cache_entry.data.file_name == filename:
                 if not cache_entry.is_expired():
                     return cache_entry.data
