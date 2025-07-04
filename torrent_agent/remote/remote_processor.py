@@ -69,8 +69,13 @@ class RemoteProcessor:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(host, username=self.get_username(host))
-            # Get the partition for the remote_path
+            
+            # Determine the device to check based on whether we are a remote agent
             cmd = f"df -BG --output=avail \"$(dirname '{remote_path}')\" | tail -1 | tr -dc '0-9'"
+
+            if self.configuration.is_remote_agent():
+                cmd = "df -BG --output=avail /mnt/ext1 | tail -1 | tr -dc '0-9'"
+            
             stdin, stdout, stderr = ssh.exec_command(cmd)
             free_gb_str = stdout.read().decode().strip()
             ssh.close()
