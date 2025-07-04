@@ -16,6 +16,12 @@ class Configuration:
         self.db_user = os.getenv("DB_USER")
         self.db_password = os.getenv("DB_PASSWORD")
 
+        # Redis configuration
+        self.redis_host = os.getenv("REDIS_HOST", "192.168.0.26")
+        self.redis_port = os.getenv("REDIS_PORT", "6379")
+        self.redis_password = os.getenv("REDIS_PASSWORD", None)
+        self.redis_db = os.getenv("REDIS_DB", "0")
+
         self.control_agent_host = os.getenv("CONTROL_AGENT_HOST")
 
         # Remote agent configuration
@@ -29,6 +35,14 @@ class Configuration:
             "name": self.db_name,
             "user": self.db_user,
             "password": self.db_password,
+        }
+    
+    def get_redis_config(self):
+        return {
+            "host": self.redis_host,
+            "port": self.redis_port,
+            "password": self.redis_password,
+            "db": self.redis_db,
         }
     
     def is_remote_agent(self):
