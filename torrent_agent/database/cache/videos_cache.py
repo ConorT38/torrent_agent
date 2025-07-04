@@ -22,9 +22,6 @@ class VideosRepositoryCache(IVideosDAO):
             self.redis_connector = RedisConnector()
             self._initialized = True
 
-    async def initialize(self):
-        await self.redis_connector.connect()
-
     async def add_video(self, video: 'Video'):
         log.info(f"Adding video to Redis cache: {video.title}")
         video_key = f"video:{video.title}"

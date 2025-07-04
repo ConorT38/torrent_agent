@@ -39,16 +39,24 @@ class RedisConnector:
         )
 
     async def set(self, key, value, expire=None):
+        if not self.redis:
+            await self.connect()
         await self.redis.set(key, value, ex=expire)
 
     async def get(self, key):
+        if not self.redis:
+            await self.connect()
         return await self.redis.get(key)
 
     async def delete(self, key):
+        if not self.redis:
+            await self.connect()
         await self.redis.delete(key)
 
     async def fetch_all_keys(self, pattern="*"):
+        if not self.redis:
+            await self.connect()
         return await self.redis.keys(pattern)
 
-    async def close(self):
+    async def close(self):  
         await self.redis.close()
