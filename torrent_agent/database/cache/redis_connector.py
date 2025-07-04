@@ -27,6 +27,7 @@ class RedisConnector:
             self.db = redis_config.get("db", 0)
 
             self._initialized = True
+            self.redis = None
 
     async def connect(self):
         self.redis = await redis.Redis(
