@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime
 
 @dataclass
@@ -10,3 +10,6 @@ class Video:
     entertainment_type: str
     id: int = None
     thumbnail_id: int = None
+
+    def to_dict(self):
+        return asdict(self)

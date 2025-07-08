@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 @dataclass
 class Show:
@@ -8,11 +8,17 @@ class Show:
     show_folder: str
     id: int | None = None
 
+    def to_dict(self):
+        return asdict(self)
+
 @dataclass
 class Season:
     show_id: int
     season_number: int
     id: int | None = None
+
+    def to_dict(self):
+        return asdict(self)
 
 @dataclass
 class Episode:
@@ -21,3 +27,6 @@ class Episode:
     show_id: int
     description: str
     season_id: int | None = None
+
+    def to_dict(self):
+        return asdict(self)
