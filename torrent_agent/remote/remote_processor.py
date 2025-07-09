@@ -152,7 +152,8 @@ class RemoteProcessor:
             log.info(f"File {local_path} copied to {host}. Removing local file.")
             os.remove(local_path)
         else:
-            log.info(f"File already exists on remote host {host}. No action taken.")
+            log.info(f"File already exists on remote host {host}. Removing local file.")
+            os.remove(local_path)
 
     def get_username(self, host):
         """

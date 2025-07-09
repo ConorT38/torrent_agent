@@ -44,6 +44,9 @@ class VideosRepositoryCache(IVideosDAO):
         video = await self.repository.get_video(video_id)
         if video:
             await self.redis_connector.set(video_key, json.dumps(video.to_dict()))
+            # Add an additional key for file path
+            file_path_key = f"video:file_name:{video.file_name}"
+            await self.redis_connector.set(file_path_key, json.dumps(video.to_dict()))
             return video
         return None
 
@@ -63,17 +66,15 @@ class VideosRepositoryCache(IVideosDAO):
 
     async def get_video_by_filename(self, filename: str) -> 'Video':
         log.info(f"Retrieving video with file path: {filename}")
-        all_keys = await self.redis_connector.fetch_all_keys("video:*")
-        for key in all_keys:
-            video_data = await self.redis_connector.get(key)
-            video = Video.from_dict(json.loads(video_data))
-            if video.file_name == filename:
-                return video
+        file_path_key = f"video:file_name:{filename}"
+        video_data = await self.redis_connector.get(file_path_key)
+        if video_data:
+            return Video.from_dict(json.loads(video_data))
 
         log.info(f"Video with file path '{filename}' not found in Redis cache. Fetching from repository.")
         video = await self.repository.get_video_by_filename(filename)
         if video:
-            video_key = f"video:{video.file_name}"
-            await self.redis_connector.set(video_key, json.dumps(video.to_dict()))
+            file_path_key = f"video:file_name:{video.file_name}"
+            await self.redis_connector.set(file_path_key, json.dumps(video.to_dict()))
             return video
         return None
