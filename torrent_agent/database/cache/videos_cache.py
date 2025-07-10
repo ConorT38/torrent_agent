@@ -78,3 +78,18 @@ class VideosRepositoryCache(IVideosDAO):
             await self.redis_connector.set(file_path_key, json.dumps(video.to_dict()))
             return video
         return None
+    
+    async def update_video_details(self, video_id: int, file_name: str, cdn_path: str):
+        log.info(f"Updating video details for video with ID: {video_id}")
+        video_key = f"video:{video_id}"
+        video_data = await self.redis_connector.get(video_key)
+        if video_data:
+            video = Video.from_dict(json.loads(video_data))
+            video.file_name = file_name
+            video.cdn_path = cdn_path
+            await self.redis_connector.set(video_key, json.dumps(video.to_dict()))
+            log.info(f"Updated video details in Redis cache for video '{video_id}'.")
+        else:
+            log.info(f"Video '{video_id}' not found in Redis cache. Fetching from repository to update details.")
+
+        await self.repository.update_video_details(video_id, file_name, cdn_path)

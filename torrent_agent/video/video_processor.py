@@ -5,6 +5,7 @@ import time
 import torrent_agent.common.logger as logger
 from torrent_agent.common.metrics import MetricEmitter
 from torrent_agent.common.constants import NON_BROWSER_FRIENDLY_VIDEO_FILETYPES
+from torrent_agent.database.dao.video_conversion_dao import IVideoConversionsDAO
 from torrent_agent.database.dao.video_dao import IVideosDAO
 from torrent_agent.model.video import Video
 from torrent_agent.remote.remote_processor import RemoteProcessor
@@ -17,7 +18,7 @@ configuration = Configuration()
 remote_processor = RemoteProcessor()
 
 class VideoProcessor:
-    def __init__(self, conversion_queue: VideoConversionQueue, repository: IVideosDAO):
+    def __init__(self, conversion_queue: VideoConversionQueue, repository: IVideosDAO, conversion_dao: IVideoConversionsDAO):
         self.conversion_queue = conversion_queue
         self.repository = repository
 

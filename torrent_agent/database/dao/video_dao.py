@@ -21,3 +21,8 @@ class IVideosDAO(ABC):
     async def get_video_by_filename(self, filename: str) -> 'Video':
         """Retrieve a video from the repository by its file path."""
         pass
+
+    @abstractmethod
+    async def update_video_details(self, video_id: int, file_name: str, cdn_path: str):
+        """Update the video details in the repository."""
+        pass

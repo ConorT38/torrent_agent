@@ -5,6 +5,7 @@ from torrent_agent.common import logger
 from torrent_agent.common.configuration import Configuration
 from torrent_agent.database.cache.shows_cache import ShowsRepositoryCache
 from torrent_agent.database.dao.show_dao import IShowsDAO
+import re
 
 configuration = Configuration()
 log = logger.get_logger()
@@ -108,7 +109,11 @@ class TorrentManager:
             if subfolder.is_dir():
                 try:
                     # Extract season number from folder name
-                    season_number = int(subfolder.name.replace("Season", "").strip())
+                    match = re.search(r'\d+', subfolder.name)
+                    if match:
+                        season_number = int(match.group())
+                    else:
+                        raise ValueError(f"Could not extract season number from folder name '{subfolder.name}'.")
                 except ValueError:
                     log.warning(f"Skipping folder '{subfolder}' as it does not represent a season.")
                     continue

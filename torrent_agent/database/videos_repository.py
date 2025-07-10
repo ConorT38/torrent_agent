@@ -65,3 +65,12 @@ class VideosRepository(IVideosDAO):
                 thumbnail_id=video_data[6] 
             )
         return None
+    
+    async def update_video_details(self, video_id: int, file_name: str, cdn_path: str):
+        sql = f"UPDATE {self.table_name} SET filename = '{file_name}', cdn_path = '{cdn_path}' WHERE id = {video_id}"
+        log.info(f"Updating video details for video with ID: {video_id}. [{sql}]")
+        try:
+            await self.db.insert(sql)
+        except Exception as e:
+            log.error(f'Failed to update video details in db, failed with error {e}', exc_info=True)
+            raise e
