@@ -35,7 +35,7 @@ configuration = Configuration()
 
 async def main():
     video_conversion_queue = VideoConversionQueue(video_repository,conversion_repository)
-    video_processor = VideoProcessor(video_conversion_queue, video_repository)
+    video_processor = VideoProcessor(video_conversion_queue, video_repository, conversion_repository)
     image_processor = ImageProcessor(image_repository)
     thumbnail_generator = ThumbnailGenerator(video_repository, image_repository)
 
