@@ -8,10 +8,12 @@ from torrent_agent.common.constants import BROWSER_FRIENDLY_VIDEO_FILETYPES, IMA
 from torrent_agent.common.metrics import MetricEmitter
 from torrent_agent.database.cache.images_cache import ImagesRepositoryCache
 from torrent_agent.database.cache.shows_cache import ShowsRepositoryCache
+from torrent_agent.database.cache.video_conversions_cache import VideoConversionsRepositoryCache
 from torrent_agent.database.cache.videos_cache import VideosRepositoryCache
 from torrent_agent.database.database_connector import DatabaseConnector
 from torrent_agent.database.images_repository import ImagesRepository
 from torrent_agent.database.shows_repository import ShowsRepository
+from torrent_agent.database.video_conversions_repository import VideoConversionsRepository
 from torrent_agent.database.videos_repository import VideosRepository
 from torrent_agent.image.image_processor import ImageProcessor
 from torrent_agent.thumbnail.thumbnail_generator import ThumbnailGenerator
@@ -27,11 +29,12 @@ connection = DatabaseConnector()
 video_repository = VideosRepositoryCache(VideosRepository(connection))
 image_repository = ImagesRepositoryCache(ImagesRepository(connection))
 shows_repository = ShowsRepositoryCache(ShowsRepository(connection))
+conversion_repository = VideoConversionsRepositoryCache(VideoConversionsRepository(connection))
 torrent_manager = TorrentManager(shows_repository)
 configuration = Configuration()
 
 async def main():
-    video_conversion_queue = VideoConversionQueue()
+    video_conversion_queue = VideoConversionQueue(video_repository,conversion_repository)
     video_processor = VideoProcessor(video_conversion_queue, video_repository)
     image_processor = ImageProcessor(image_repository)
     thumbnail_generator = ThumbnailGenerator(video_repository, image_repository)
