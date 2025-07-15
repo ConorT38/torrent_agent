@@ -6,6 +6,7 @@ class Image:
     file_name: str
     cdn_path: str
     uploaded: datetime
+    id: int = None
 
     def to_dict(self):
         data = asdict(self)

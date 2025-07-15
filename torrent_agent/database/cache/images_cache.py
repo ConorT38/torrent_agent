@@ -28,7 +28,7 @@ class ImagesRepositoryCache(IImagesDAO):
         cached_image = await self.redis_connector.get(image.cdn_path)
         if cached_image:
             log.info(f"Image '{image.cdn_path}' already exists in cache. Skipping addition.")
-            return json.loads(cached_image)["id"]
+            return 0 if not cached_image else json.loads(cached_image)["id"]
         else:
             await self.redis_connector.set(image.cdn_path, json.dumps(image.to_dict()))
             return await self.repository.add_image(image)
@@ -38,7 +38,7 @@ class ImagesRepositoryCache(IImagesDAO):
         await self.redis_connector.connect()
         cached_image = await self.redis_connector.get(image_id)
         if cached_image:
-            log.info(f"Image '{image_id}' found in cache.")
+            log.info(f"Image '{image_id}' found in cache. {json.loads(cached_image)}")
             return Image.from_dict(json.loads(cached_image))
         else:
             log.info(f"Image '{image_id}' not found in cache. Fetching from repository.")
