@@ -70,7 +70,7 @@ class VideosRepository(IVideosDAO):
         return None
     
     async def update_video_details(self, video_id: int, file_name: str, cdn_path: str, is_browser_friendly: bool = False):
-        sql = f"UPDATE {self.table_name} SET filename = '{file_name}', cdn_path = '{cdn_path}', browser_friendly = {is_browser_friendly} WHERE id = {video_id}"
+        sql = f"UPDATE {self.table_name} SET filename = '{file_name}', cdn_path = '{cdn_path}', browser_friendly = {is_browser_friendly} WHERE id = {str(video_id)}"
         log.info(f"Updating video details for video with ID: {video_id}. [{sql}]")
         try:
             await self.db.insert(sql)

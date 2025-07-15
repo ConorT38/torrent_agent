@@ -9,10 +9,10 @@ class Image:
 
     def to_dict(self):
         data = asdict(self)
-        data['uploaded'] = self.uploaded.isoformat()  # Convert datetime to ISO format string
+        data['uploaded'] = self.uploaded.isoformat() if self.uploaded else None
         return data
     
     @classmethod
     def from_dict(cls, data):
-        data['uploaded'] = datetime.fromisoformat(data['uploaded'])  # Convert ISO format string back to datetime
+        data['uploaded'] = datetime.fromisoformat(data['uploaded']) if data.get('uploaded') else None
         return cls(**data)
