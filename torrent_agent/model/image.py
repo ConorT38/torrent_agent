@@ -8,4 +8,6 @@ class Image:
     uploaded: datetime
 
     def to_dict(self):
-        return asdict(self)
+        data = asdict(self)
+        data['uploaded'] = self.uploaded.isoformat()  # Convert datetime to ISO format string
+        return data

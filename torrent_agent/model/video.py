@@ -12,4 +12,6 @@ class Video:
     thumbnail_id: int = None
 
     def to_dict(self):
-        return asdict(self)
+        data = asdict(self)
+        data['uploaded'] = self.uploaded.isoformat() if self.uploaded else None
+        return data
