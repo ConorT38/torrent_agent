@@ -10,7 +10,7 @@ class VideosRepository(IVideosDAO):
         self.db = db
         self.table_name = 'videos'
 
-    async def add_video(self, video: 'Video'):
+    async def add_video(self, video: 'Video') -> 'Video':
         sql = f"INSERT INTO {self.table_name} (filename, cdn_path, title, uploaded, entertainment_type) VALUES ('{video.file_name}', '{video.cdn_path}', '{video.title}', NOW(), '{video.entertainment_type}')"
 
         log.info(f"Inserting {video.file_name} into the videos table. [{sql}]")
@@ -20,6 +20,9 @@ class VideosRepository(IVideosDAO):
                 movie_sql = f"INSERT INTO movies (name, video_id) VALUES ('{video.title}', {last_row_id})"
                 log.info(f"Inserting {video.file_name} into the movies table. [{movie_sql}]")
                 await self.db.insert(movie_sql)
+            
+            # Retrieve the inserted video by ID
+            return await self.get_video(last_row_id)
         except Exception as e:
             log.error(f'Failed to insert to db, failed with error {e}', exc_info=True)
             raise e
@@ -66,8 +69,8 @@ class VideosRepository(IVideosDAO):
             )
         return None
     
-    async def update_video_details(self, video_id: int, file_name: str, cdn_path: str):
-        sql = f"UPDATE {self.table_name} SET filename = '{file_name}', cdn_path = '{cdn_path}' WHERE id = {video_id}"
+    async def update_video_details(self, video_id: int, file_name: str, cdn_path: str, is_browser_friendly: bool = False):
+        sql = f"UPDATE {self.table_name} SET filename = '{file_name}', cdn_path = '{cdn_path}', browser_friendly = {is_browser_friendly} WHERE id = {video_id}"
         log.info(f"Updating video details for video with ID: {video_id}. [{sql}]")
         try:
             await self.db.insert(sql)

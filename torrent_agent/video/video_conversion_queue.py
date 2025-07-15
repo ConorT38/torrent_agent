@@ -107,20 +107,21 @@ class VideoConversionQueue:
                 metric_emitter.files_converted.inc()
                 # Update the database with the converted status
                 await self.conversion_dao.update_conversion_status(
-                    conversion_id=video_conversion_entry.input_file,  # Assuming input_file is the ID
+                    conversion_id=video_conversion_entry.input_file,  
                     status="completed"
                 )
                 await self.video_repository.update_video_details(
                     video_id=video_conversion_entry.video_id,
                     file_name=video_conversion_entry.output_file,
-                    cdn_path=file_name_to_cdn_path(video_conversion_entry.output_file)  # Assuming no CDN path is provided during conversion
+                    cdn_path=file_name_to_cdn_path(video_conversion_entry.output_file),
+                    is_browser_friendly=True  
                 )
             except Exception as e:
                 video_conversion_entry.mark_as_failed(str(e))
                 log.error(f"Failed to perform conversion, skipping:  {str(video_conversion_entry)}: {e}")
                 # Update the database with the failed status
                 await self.conversion_dao.update_conversion_status(
-                    conversion_id=video_conversion_entry.input_file,  # Assuming input_file is the ID
+                    conversion_id=video_conversion_entry.input_file,  
                     status="failed",
                     error_message=str(e)
                 )

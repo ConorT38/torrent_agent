@@ -50,11 +50,7 @@ class VideoProcessor:
                 log.info(f"File '{clean_file_name}' is already in the conversion queue. Skipping.")
                 return
 
-            # Add to the queue if the file type is non-browser-friendly
-            if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES:
-                log.debug(f"File '{clean_file_name}' is a non-browser-friendly format: {extension}. Adding to conversion queue.")
-                await self.convert_to_browser_friendly_file_type(clean_file_name, extension)
-                return
+            
             
             log.debug(f"File '{clean_file_name}' is already in a browser-friendly format: {extension}")
             if configuration.is_remote_agent():
@@ -70,15 +66,21 @@ class VideoProcessor:
             title = clean_file_name.split("/")[-1].replace(extension, "")  # Extract the title from the file name
             clean_file_name = clean_file_name.replace(configuration.get_media_directory(), '/mnt/ext1')
             video = Video(file_name=clean_file_name, cdn_path=cdn_path, title=title, entertainment_type=entertainment_type, uploaded=None)
-            await self.repository.add_video(video)
+            added_video = await self.repository.add_video(video)
             metric_emitter.files_processed.inc()
+
+            # Add to the queue if the file type is non-browser-friendly
+            if extension in NON_BROWSER_FRIENDLY_VIDEO_FILETYPES:
+                log.debug(f"File '{clean_file_name}' is a non-browser-friendly format: {extension}. Adding to conversion queue.")
+                await self.convert_to_browser_friendly_file_type(added_video.id, clean_file_name, extension)
+                return
         else:
             log.info(f"File is already processed and stored {file_path}")
         
-    async def convert_to_browser_friendly_file_type(self, file, extension):
+    async def convert_to_browser_friendly_file_type(self, id, file, extension):
         log.info(f"Converting '{file}' to a browser-friendly format. '{extension}' -> '.mp4'")
         new_file = file.replace(extension, ".mp4")
-        conversion_job = VideoConversionQueueEntry(file, new_file)
+        conversion_job = VideoConversionQueueEntry(id, file, new_file)
         await self.conversion_queue.add_to_queue(conversion_job)
 
         return new_file

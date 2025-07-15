@@ -22,16 +22,22 @@ class VideosRepositoryCache(IVideosDAO):
             self.redis_connector = RedisConnector()
             self._initialized = True
 
-    async def add_video(self, video: 'Video'):
+    async def add_video(self, video: 'Video') -> 'Video':
         log.info(f"Adding video to Redis cache: {video.title}")
-        video_key = f"video:{video.title}"
+        video_key = f"video:file_name:{video.file_name}"
         existing_video = await self.redis_connector.get(video_key)
         if existing_video:
             log.info(f"Video '{video.title}' already exists in Redis cache. Skipping addition.")
-            return
+            return Video.from_dict(json.loads(existing_video))
+        
         video_data = video.to_dict()  # Assuming Video has a `to_dict` method
         await self.redis_connector.set(video_key, json.dumps(video_data))
-        await self.repository.add_video(video)
+        new_video = await self.repository.add_video(video)
+        
+        # Update Redis cache with the new video ID
+        new_video_key = f"video:{new_video.id}"
+        await self.redis_connector.set(new_video_key, json.dumps(new_video.to_dict()))
+        return new_video
 
     async def get_video(self, video_id: str) -> 'Video':
         log.info(f"Retrieving video with ID: {video_id}")
@@ -79,7 +85,7 @@ class VideosRepositoryCache(IVideosDAO):
             return video
         return None
     
-    async def update_video_details(self, video_id: int, file_name: str, cdn_path: str):
+    async def update_video_details(self, video_id: int, file_name: str, cdn_path: str, is_browser_friendly: bool = False):
         log.info(f"Updating video details for video with ID: {video_id}")
         video_key = f"video:{video_id}"
         video_data = await self.redis_connector.get(video_key)
@@ -92,4 +98,4 @@ class VideosRepositoryCache(IVideosDAO):
         else:
             log.info(f"Video '{video_id}' not found in Redis cache. Fetching from repository to update details.")
 
-        await self.repository.update_video_details(video_id, file_name, cdn_path)
+        await self.repository.update_video_details(video_id, file_name, cdn_path, is_browser_friendly)

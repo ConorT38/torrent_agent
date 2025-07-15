@@ -3,8 +3,8 @@ from torrent_agent.model.video import Video
 
 class IVideosDAO(ABC):
     @abstractmethod
-    async def add_video(self, video: 'Video'):
-        """Add a video to the repository."""
+    async def add_video(self, video: 'Video') -> 'Video':
+        """Add a video to the repository and return the added video."""
         pass
 
     @abstractmethod
@@ -23,6 +23,6 @@ class IVideosDAO(ABC):
         pass
 
     @abstractmethod
-    async def update_video_details(self, video_id: int, file_name: str, cdn_path: str):
+    async def update_video_details(self, video_id: int, file_name: str, cdn_path: str, is_browser_friendly: bool = False):
         """Update the video details in the repository."""
         pass
