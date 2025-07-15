@@ -49,6 +49,11 @@ async def main():
             log.error(f"Error while processing video conversion queue: {e}", exc_info=True)
 
     for file_path in glob.glob(f"{configuration.get_media_directory()}/**/*.*", recursive=True):
+        # Skip ignored paths
+        if "/mnt/ext1/mariadb_data" in file_path:
+            log.debug(f"Skipping ignored path: {file_path}")
+            continue
+        
         # Skip directories
         if not os.path.isfile(file_path):
             log.debug(f"Checking if directory is a TV show: {file_path}")
