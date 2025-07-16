@@ -5,8 +5,7 @@ class Show:
     name: str
     description: str
     thumbnail_id: int
-    show_folder: str
-    id: int | None = None
+    id: int = None
 
     def to_dict(self):
         return asdict(self)
@@ -15,7 +14,7 @@ class Show:
 class Season:
     show_id: int
     season_number: int
-    id: int | None = None
+    id: int = None
 
     def to_dict(self):
         return asdict(self)
@@ -25,8 +24,7 @@ class Episode:
     video_id: int
     episode_number: int
     show_id: int
-    description: str
-    season_id: int | None = None
+    season_id: int = None
 
     def to_dict(self):
         return asdict(self)
