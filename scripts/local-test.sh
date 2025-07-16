@@ -19,7 +19,7 @@ $venv_python -m pip install -r requirements.txt
 $venv_python -m pip install wheel setuptools python-dotenv
 
 # Load environment variables from .env file
-export $(grep -v '^#' .env | xargs)
+export $(grep -v '^#' .env.local | xargs)
 
 # Build the wheel package
 $venv_python setup.py bdist_wheel

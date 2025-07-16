@@ -49,8 +49,6 @@ class VideoProcessor:
                     return
                 log.info(f"File '{clean_file_name}' is already in the conversion queue. Skipping.")
                 return
-
-            
             
             log.debug(f"File '{clean_file_name}' is already in a browser-friendly format: {extension}")
             if configuration.is_remote_agent():

@@ -7,6 +7,8 @@ from torrent_agent.database.cache.shows_cache import ShowsRepositoryCache
 from torrent_agent.database.dao.show_dao import IShowsDAO
 import re
 
+from torrent_agent.model.show import Show
+
 configuration = Configuration()
 log = logger.get_logger()
 
@@ -90,8 +92,10 @@ class TorrentManager:
 
         # Ensure the folder is within '/torrents/tv/'
         path = pathlib.Path(folder_path)
-        if '/torrents/tv/' not in str(path).replace("\\", "/").lower():
-            log.error(f"Folder '{folder_path}' is not within '/torrents/tv/'.", exc_info=True)
+        # Ensure the folder is within '/torrents/tv/' and is not deeper than one level (xyz format)
+        path_parts = str(path).replace("\\", "/").lower().split('/torrents/tv/')
+        if len(path_parts) != 2 or '/' in path_parts[1]:
+            log.error(f"Folder '{folder_path}' is not in the expected '/torrents/tv/xyz' format.", exc_info=True)
             return
 
         # Extract the show folder name (xyz)
@@ -99,7 +103,18 @@ class TorrentManager:
         show = await self.shows_repository.get_show_by_folder(show_folder)
 
         if not show:
-            log.error(f"Show folder '{show_folder}' does not exist in the database.", exc_info=True)
+            log.warning(f"Show folder '{show_folder}' does not exist in the database.", exc_info=True)
+
+            # Add the show to the database
+            show = await self.shows_repository.add_show(
+                Show(
+                    name=show_folder,
+                    description="",
+                    thumbnail_id=1,
+                    show_folder=show_folder
+                )
+            )
+            log.info(f"Added show '{show_folder}' to the database.")
             return
 
         show_id = show['id']
@@ -130,13 +145,20 @@ class TorrentManager:
 
                 # Check for episodes within the season folder
                 for file in subfolder.iterdir():
-                    if file.is_file() and file.suffix.lower() == ".mkv":
-                        log.info(f"Skipping episode addition in folder '{subfolder}' as it contains an .mkv file.")
-                        break
-                else:
-                    # Add episodes if no .mkv file is found
-                    for file in subfolder.iterdir():
-                        if file.is_file():
-                            episode_name = file.stem
-                            await self.shows_repository.add_episode(show_id, season_number, episode_name)
-                            log.info(f"Added episode '{episode_name}' to season {season_number} for show '{show_folder}'.")
+                    if file.is_file():
+                        # Extract season and episode numbers from the filename (e.g., S01E06)
+                        match = re.search(r'[Ss](\d+)[Ee](\d+)', file.stem)
+                        if match:
+                            season_from_file = int(match.group(1))
+                            episode_number = int(match.group(2))
+
+                            # Ensure the season matches the folder's season
+                            if season_from_file != season_number:
+                                log.warning(f"File '{file.name}' does not match season {season_number}. Skipping.")
+                                continue
+
+                            # Add the episode
+                            await self.shows_repository.add_episode(show_id, season_number, episode_number)
+                            log.info(f"Added episode {episode_number} to season {season_number} for show '{show_folder}'.")
+                        else:
+                            log.warning(f"Skipping file '{file.name}' as it does not match the SxxExx pattern.")
